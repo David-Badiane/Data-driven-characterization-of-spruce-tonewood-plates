@@ -26,8 +26,12 @@ referenceVals = [rho,  Ex*0.078, Ex, Ex*0.043,...
 %                  Ex*0.061 ,Ex*0.061, Ex*0.061,...
 %                  0.33, 0.33, 0.33];
 %              
+varyingParamsNames = params(7:end,1);
+for jj = 1:length(referenceVals)
+                model.param.set(varyingParamsNames(jj), referenceVals(jj));
+end
+params = mphgetexpressions(model.param)
 
-             
 eigenFreqzNames = {'f1' 'f2' 'f3' 'f4' 'f5'};             
 
 
