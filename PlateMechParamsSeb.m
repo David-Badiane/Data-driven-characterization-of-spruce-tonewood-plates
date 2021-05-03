@@ -18,10 +18,16 @@ varyingParamsNames = params(7:end,1);
 
 Ex = 1e10;
 rho = 400;           
-referenceVals = [rho,  Ex*0.078, Ex, Ex*0.043,...
-                 Ex*0.064 ,Ex*0.061, Ex*0.003,...
-                 0.372, 0.435, 0.467];
-             
+referenceVals = [rho, Ex, Ex, Ex*0.04,...
+                 Ex*0.06 , Ex*0.06,Ex*0.003,...
+                 0.3, 0.3, 0.467];
+% referenceVals = [rho,  Ex, Ex, Ex,...
+%                  Ex*0.061 ,Ex*0.061, Ex*0.061,...
+%                  0.33, 0.33, 0.33];
+
+for jj = 1:length(referenceVals)
+     model.param.set(varyingParamsNames(jj), referenceVals(jj));
+end 
 % referenceVals = [rho,  Ex, Ex, Ex,...
 %                  Ex*0.061 ,Ex*0.061, Ex*0.061,...
 %                  0.33, 0.33, 0.33];
@@ -41,8 +47,8 @@ csvPath = [baseFolder,'\csv'];
 simFolder = [baseFolder,'\Simulations'];
 
 cd(baseFolder)
-nSim = 12;
-model = mphopen('PlateMechParams');
+nSim = 11;
+%model = mphopen('PlateMechParams');
 outputsALLInfo = [];
 outputsInfo = [];
 
@@ -111,10 +117,10 @@ for ii = 1:nSim
         meshData = table2array(readtable(['mesh', int2str(ii),'.csv']));
         modesData = table2array(readtable(['modeshapes', int2str(ii),'.csv'])); 
         figure(100)
-        subplot (6,12,count)
+        subplot (6,6,count)
         z = modesData(:,jj);
         idx = find(z<= 1e-7);
-        plot3(meshData(idx,2),meshData(idx,3),z(idx), '.', 'markerSize', 4);
+        plot3(meshData(idx,1),meshData(idx,2),z(idx), '.', 'markerSize', 4);
         view(0,90);
 %         xlabel('x  [mm]');
 %         ylabel('y  [mm]');
