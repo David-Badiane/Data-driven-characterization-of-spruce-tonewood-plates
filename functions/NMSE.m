@@ -15,7 +15,7 @@ diff = (measSig/avgMeasSig - simSig/avgSimSig);
 NMSE = 1/length(measSig) * sum((diff).^2)*100;
 
 figure(100)
-subplot(2,5,ii)
+subplot(5,5,ii)
 hist(diff,20);
 title(['f', num2str(ii)]);
 xlabel(' Y - Y*')

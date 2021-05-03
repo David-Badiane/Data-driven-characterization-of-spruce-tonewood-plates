@@ -10,7 +10,7 @@ outputFiletype = '.csv';
 
 %% 1) SET UP PARAMETERS FOR SIMULATIONS
 
-model = mphopen('PlateMechParams');
+model = mphopen('PlateMechParams2');
 % Parameters setup
 params = mphgetexpressions(model.param);                  % get initial parameters                          
 % get parameters names
@@ -47,8 +47,8 @@ csvPath = [baseFolder,'\csv'];
 simFolder = [baseFolder,'\Simulations'];
 
 cd(baseFolder)
-nSim = 11;
-%model = mphopen('PlateMechParams');
+nSim = 12;
+%model = mphopen('PlateMechParams2');
 outputsALLInfo = [];
 outputsInfo = [];
 
@@ -63,7 +63,7 @@ model.result.export('data1').set('data', 'dset1');
 model.study('std1').feature('eig').set('shift', '2[Hz]');
 
 
-for ii = 1:nSim
+for ii = 10:nSim
     cd(simFolder);
     % import a mesh
     meshFilename = [baseFolder,'\mesh' int2str(ii) ,'.stl'];
@@ -75,6 +75,11 @@ for ii = 1:nSim
     model.geom('mgeom1').lengthUnit('mm');
     model.mesh('mesh1').feature('size').set('hauto', '6');
     model.mesh('mpart1').run;
+    model.component('comp1').geom('geom1').feature('imp1').set('mesh', 'mpart1');
+    model.component('comp1').mesh('mesh1').run;
+    model.mesh('mpart1').feature('imp1').importData;
+    model.component('comp1').geom('geom1').run('ige1');
+    
     model.study('std1').run(); 
 
     modesFileName = 'solidDisp';

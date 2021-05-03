@@ -21,20 +21,37 @@ for ii = 1:nModes
 
 
     if plotData
-        figure(3)
-        subplot(5,5,ii)
-        plot(xPoints, edgeX, xPoints(minLocsX),edgeX(minLocsX),'r*');
-        xlabel('Num el')
-        ylabel('disp')
-        title(['mode', num2str(ii), '  y = 0'])
-
-        figure(4)
-        subplot(5,5,ii)
-        plot(yPoints , edgeY, yPoints(minLocsY), edgeY(minLocsY),'r*')
-        xlabel('Num el')
-        ylabel('disp')
-        title(['mode', num2str(ii), '  x = 0'])
+%         figure(3)
+%         subplot(5,5,ii)
+%         plot(xPoints, edgeX, xPoints(minLocsX),edgeX(minLocsX),'r*');
+%         xlabel('Num el')
+%         ylabel('disp')
+%         title(['mode', num2str(ii), '  y = 0'])
+% 
+%         figure(4)
+%         subplot(5,5,ii)
+%         plot(yPoints , edgeY, yPoints(minLocsY), edgeY(minLocsY),'r*')
+%         xlabel('Num el')
+%         ylabel('disp')
+%         title(['mode', num2str(ii), '  x = 0'])
+%           if ii ==2
+%               
+% %               posX = minLocsX(1)/xPoints(end);
+% 
+% %               if (posX < 0.17 || posX > 0.23)||(isempty(posY))
+%                 if mins{ii,2}>0.25
+%                   mins{ii,2} = nan;
+%                   figure(3)
+%                   plot3(meshData(:,1), meshData(:,2), modesData(:,ii) ,'.', 'MarkerSize', 10);
+% 
+%                    subplot(1,2,1)
+% %                   plot(yPoints , edgeY, yPoints(minLocsY), edgeY(minLocsY),'r*');
+% %                   subplot(1,2,2)
+% %                   plot(xPoints, edgeX, xPoints(minLocsX),edgeX(minLocsX),'r*');
+%               end
+%           end
     end
 end
 end
 
+ 

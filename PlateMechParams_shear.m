@@ -1,11 +1,10 @@
 clear all;
 close all;
 
-csvPath = 'C:\Users\utente\.comsol\v56\llmatlab\csv2';
-addpath 'C:\Users\utente\.comsol\v56\llmatlab\functions'
-addpath 'C:\Users\utente\.comsol\v56\llmatlab\data'
-addpath(csvPath);
+%% Initial setup
+addpath 'functions'
 addpath 'data'
+addpath 'csv'
 
 infosTable = readtable("sampleMeasurements.xlsx");
 infosMatrix = table2array(infosTable(:,3:end));
@@ -32,10 +31,11 @@ idx = 1;
 standardDev = 0.1;
 
 %% 1) OBTAIN EXPERIMENTAL RESULTS
+
+% setup
 jj = 1;
 sampleNames = {'7b'};
-
-fHigh = 600;
+fHigh = 1200;
 M = 10;
 thresholdPerc = 30;
 idx = 1;
@@ -46,105 +46,92 @@ fAxis = f(f <= fHigh);
 [HvSVD,threshold,singularVals] = SVD(H1_v, fAxis, M, thresholdPerc, sampleNames, jj);
     
 % 2) MODAL ANALYSIS
-[Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,1e-3, 3);
+[Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,1e-4, 3);
 f0 = f0(2:end);
 csis = csis(2:end);
 
+% 3) Compute first guess of Ex
 geom = infosMatrix(5,1:3);
 rho = infosMatrix(5,end);
-[mechParams, normParams] = computeParams([f0(1), f0(2), f0(5)],rho, geom);
-
-% figure()
-% semilogy(fAxis, abs(Hv)/max(abs(Hv)), fAxiss, abs(Hvv/max(abs(Hvv))),'LineWidth', 1.3);
-% legend('no shear info', ' with shear info');
-% xlabel('f    [Hz]');
-% ylabel('|H_v(f)| ');
-% title('|H_v(f)| with and without shear modes');
+[mechParams, normParams] = computeParams([f0(1), f0(2), f0(3)],rho, geom);
 
 %% 2) SET UP PARAMETERS FOR SIMULATIONS
 
+% open Comsol model
 model = mphopen('PlateMechParams');
 % Parameters setup
 params = mphgetexpressions(model.param);                  % get initial parameters                          
 % get parameters names
 varyingParamsNames = params(7:end,1);
 steadyParamsNames = params(1:6,1);
-pastVals = readTuples('inputs.csv', 9, false);
 
+% set geometry parameters
 geomSet = [infosMatrix(5,1:6), infosMatrix(5,end)];
 setParams = cell(length(steadyParamsNames)+1,1);
 setParams(1:end-1) = steadyParamsNames;
-setParams{end} = 'rho'; 
+setParams{end} = 'rho';
+
 for jj = 1:length(setParams)
-                model.param.set(setParams(jj), geomSet(jj));
+   model.param.set(setParams(jj), geomSet(jj));
 end
-%Ex = 2.128363746952024e10;
-%Ey = 9.3136e+08;
-%Ey = 1.1992e+09;
+
+% prepare reference values
 Ex = mechParams(1);
-             
 referenceVals = [rho, Ex, Ex*0.078, Ex*0.043,...
                  Ex*0.061, Ex*0.064, Ex*0.003,...
                  0.467, 0.372, 0.435];
-             
-referenceVals = [rho, Ex, mechParams(2), Ex*0.043,...
-                 mechParams(3), Ex*0.064, Ex*0.003,...
-                 0.467, 0.372, 0.435];
-             
-eigenFreqzNames = {'f2' 'f3' 'f5' 'f6' 'f10'};             
-
-for ii = (1:length(steadyParamsNames))
-    model.param.set(steadyParamsNames(ii), comsolParams(ii));
-end
-nSimulations = 50;
-
+            
 %% 3) DATASET GENERATION - in mech params -- out eigenfrequencies mesh and modeshapes
+% setup variables 
 baseFolder = pwd;
 simFolder = [baseFolder,'\Simulations'];
+csvPath = [baseFolder, '\csv'];
 
 cd(baseFolder)
-nSim = 200;
-inputsInfo = table2array(readtable("inputs.csv"));
+nSim = 300;
 model = mphopen('PlateMechParams');
 outputsALLInfo = [];
 outputsInfo = [];
 inputsInfo = [];
 
+% setup Comsol
 model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').active(false);
 model.mesh('mesh1').feature('size').set('hauto', '1');
 model.mesh('mesh1').run;
-nModes = 23;
+nModes = 20;
 model.study('std1').feature('eig').set('neigs', int2str(nModes));
 model.result.export('data1').set('data', 'dset1');
 
 for ii = 1:nSim
-        cd(simFolder);
-        if ii == 1
-            for jj = 1:length(referenceVals)
-                model.param.set(varyingParamsNames(jj), referenceVals(jj));
-            end
-            currentVals = referenceVals;
-        else
-            currentVals = createSetParams(model, referenceVals,standardDev, varyingParamsNames);
+    disp(ii)
+    cd(simFolder);
+    % 1) gaussian sample mechanical parameters
+    if ii == 1
+        for jj = 1:length(referenceVals)
+            model.param.set(varyingParamsNames(jj), referenceVals(jj));
         end
-        
-        
-        model.study('std1').run(); 
-        
-        modesFileName = 'solidDisp';
-        expression = {'solid.disp'};
-        exportAllModesFromDataset(model, modesFileName,simFolder,expression);
-        fileData = readTuples([modesFileName,'.txt'], nModes+3, true);
-        meshData =fileData(:,1:3);
-        deformationData = fileData(:,4:nModes);
-        delete([modesFileName,'.txt']); 
-        
-        writeMat2File(meshData,['mesh', int2str(ii),'.csv'], {'x' 'y' 'z'}, 3,true);
-        writeMat2File(deformationData,['modeshapes', int2str(ii),'.csv'], {'disp f'}, 1, false);
-    
+        currentVals = referenceVals;
+    else
+        currentVals = createSetParams(model, referenceVals,standardDev, varyingParamsNames);
+    end
+    % 2) run eigenfrequency study
+    model.study('std1').run();
+
+    % 3.a) and save modeshapes
+    modesFileName = 'solidDisp';
+    expression = {'solid.disp'};
+    exportAllModesFromDataset(model, modesFileName,simFolder,expression);
+    fileData = readTuples([modesFileName,'.txt'], nModes+3, true);
+    meshData =fileData(:,1:3);
+    deformationData = fileData(:,4:nModes+3);
+    delete([modesFileName,'.txt']); 
+
+    writeMat2File(meshData,['mesh', int2str(ii),'.csv'], {'x' 'y' 'z'}, 3,true);
+    writeMat2File(deformationData,['modeshapes', int2str(ii),'.csv'], {'disp f'}, 1, false);
+
     cd(csvPath)
     
-      % 3) Evaluate eigenfrequencies
+      % 3.b) Evaluate eigenfrequencies
     evalFreqz = mpheval(model,'solid.freq','Dataset','dset1','edim',0,'selection',1);
     eigenFreqz = real(evalFreqz.d1');
     %presentEigenFreqz = [eigenFreqz(2),eigenFreqz(3),eigenFreqz(5),...
@@ -160,50 +147,60 @@ for ii = 1:nSim
     % 5) Update results
     inputsInfo = [inputsInfo; currentVals];
     %outputsInfo = [outputsInfo; presentEigenFreqz];
-    outputsALLInfo = [outputsALLInfo; eigenFreqz];
+    outputsALLInfo = [outputsALLInfo; eigenFreqz]
     
     % 6) Save results
     inputsTable  = writeMat2File(inputsInfo,'inputs.csv', varyingParamsNames(1:10), 10,true);   
     %outputsTable = writeMat2File(outputsInfo,'outputs.csv', eigenFreqzNames, 5,true);   
-    outputsALLTable = writeMat2File(outputsALLInfo,'outputsALL.csv', {'f'}, 1,false);   
-
+    outputsALLTable = writeMat2File(outputsALLInfo(:,1:nModes),'outputsALL.csv', {'f'}, 1,false);   
 end
 
-% outputsALLTable = writeMat2File(eigenInfos,'outputsALL.csv', {'f'}, 1,false)
+%% 4) LOOK FOR POISSON PLATES (if present)
 
-figure()
-plot(fAxis, abs(Hv)/max(abs(Hv)));
-hold on;
-stem(eigenFreqz, ones(size(eigenFreqz)));
-xlim([20,550]);
-xlabel('f    [Hz]');
-ylabel('|H_v(f)|');
-legend('H_v/max(H_v)', 'Comsol fout');
-title('FRF for sample 7b and comsol eigenfrequencies with same density, Simeon formula E_L, E_R, G_{LR}')
+L = Ls(1)
+W = Ws(1)
+aspectRatio = L/W;
+inputsInfo = table2array(readtable("inputs.csv"));
+poissonCheck = (inputsInfo(:,2)./inputsInfo(:,3)).^(1/4);
+poissonPlates = intersect(find( poissonCheck > 0.99*aspectRatio),find( poissonCheck<1.01*aspectRatio));
+length(poissonPlates)
 
-
-%% 4 ) ANALYZE MESH AND MODESHAPES - OBTAIN THEIR NAMES
- cd(simFolder)
- nModes = 23;
- nSim = 200;
- 
-% names obtaineeed
-
-%modesNames = table2array(readtable("modesNames.csv"));
-
-modesNames = cell(nSim,nModes);
-minimumThreshold = 1e-7;
-for ii = 1:200
+for jj = 138:length(poissonPlates)
+    if poissonPlates(jj) >=1
+    ii = poissonPlates(jj);
     meshData = table2array(readtable(['mesh',int2str(ii),'.csv']));
     modesData = table2array(readtable(['modeshapes',int2str(ii),'.csv']));
-    [modesNamesSim] = recognizeModes(meshData,modesData,minimumThreshold^-1, ii );
-    modesNames(ii,1:nModes) = modesNamesSim;
+    figure()
+    plot3(meshData(:,1), meshData(:,2), modesData(:,4) ,'.', 'MarkerSize', 5);
+    end
+
 end
 
-cd('C:\Users\utente\.comsol\v56\llmatlab\csv2')
-namesTable  = writeMat2File(modesNames,'modesNames.csv', {'f'}, 1,false);
+%% 5.1 ) ANALYZE MESH AND MODESHAPES - OBTAIN THEIR NAMES - Necessary for loss function
 
-% modesNames2 = modesNames;
+%cd(simFolder)
+ nModes = 20;
+ nSim = 301;
+ 
+% names obtained (if you want to obtain them again, just uncomment what is
+% commented )
+
+modesNames = table2array(readtable("modesNames.csv"));
+
+%modesNames = cell(nSim,nModes);
+% minimumThreshold = 1e-7;
+% for ii = 1:nSim
+%     meshData = table2array(readtable(['mesh',int2str(ii),'.csv']));
+%     modesData = table2array(readtable(['modeshapes',int2str(ii),'.csv']));
+%     [modesNamesSim] = recognizeModes(meshData,modesData,minimumThreshold^-1, ii );
+%     modesNames(ii,1:nModes) = modesNamesSim;
+% end
+
+
+% cd('C:\Users\utente\.comsol\v56\llmatlab\csv')
+
+%modesNames  = writeMat2File(modesNames,'modesNames2.csv', {'f'}, 1,false);
+
 % for ii = 1:length(outliers)
 %     meshData = table2array(readtable(['mesh',int2str(outliers(ii)),'.csv']));
 %     modesData = table2array(readtable(['modeshapes',int2str(outliers(ii)),'.csv']));
@@ -213,107 +210,59 @@ namesTable  = writeMat2File(modesNames,'modesNames.csv', {'f'}, 1,false);
 %     for jj = 1:notNumber
 %         str = input('replace not with...','s');
 %         index = input('not index...');
-%         modesNames2{jj,index} = str;
+%         modesNames{jj,index} = str;
 %     end  
 % end
-% 
-% 
-% ordering = zeros(nSim,1);
-% 
-% for ii = 1:length(ordering)
+
+
+%% 5.2) Check the results from modeshapes analysis to find Poisson plates ( ignore, already done in 4) )
+
+ordering = zeros(nSim,1);
+
+for ii = 1:length(ordering)
 %    if [modesNames{ii,1:end}] ~= [modesNames{1,1:end}] 
-%            ordering(ii) = 1;
+%            ordering(ii) = 0;
 %    else
-%        
-%    for jj = 1:10
-%     if modesNames{ii,jj} == 'not'
-%         ordering(ii) = 2; 
-%     end
+      
+   for jj = 1:2
+    if modesNames{ii,jj} == 'not'
+        ordering(ii) = 2; 
+    end
 %    end
-%        
-%    end
-% end
+       
+   end
+   if ordering(ii) == 2
+       figure()
+       meshData = table2array(readtable(['mesh',int2str(ii),'.csv']));
+       modesData = table2array(readtable(['modeshapes',int2str(ii),'.csv']));
+       plot3(meshData(:,1), meshData(:,2), modesData(:,4) ,'.', 'MarkerSize', 10);
+   end
+   
+end
 
 toDeleteIndexes = find(ordering ~= 0 );
 
+% if there are poisson Plates ( now there are not )
 cleanOutputsALL =  outputsALLInfo;
 cleanOutputsALL (toDeleteIndexes,:) = [];
 cleanInputsInfo = inputsInfo;
 cleanInputsInfo(toDeleteIndexes,:) = [];
 
+%% 5.3) Check how many time each tuple of modesNames appears in modes Names (check the ordering of modeshapes)
 
-%% SEE MODES
-modeNumber = 2;
-%tuples = [78 90 211 3  296 509 516 199];
-tuples = [ 3  296 509 516 ];
-mins = seeModes( 1e7, 3, tuples);
-%% computation of minimum position and max value
-tuples = 1:550;
-maxLeft = zeros(length(tuples),1);
-minPos  = zeros(length(tuples),1);
-modeNumber = 2;
-
-for ii = 1:length(tuples)
-    meshData = table2array(readtable(['mesh',int2str(tuples(ii)),'.csv']));
-    modesData = table2array(readtable(['modeshapes',int2str(tuples(ii)),'.csv']));
-
-    idxX = find(meshData(:,2) == 0);                        % y=0 ---> x axis
-    edgeX = lowpass(modesData(idxX,modeNumber), 0.65);
-    minLocsX = find(edgeX == min(edgeX(1:floor(length(edgeX)/2)) ));
-    
-    
-    %[minValsX,minLocsX] = findpeaks(1./edgeX, 'MinPeakWidth', 2,'MinPeakProminence', 1e7);
-
-    xPoints =1:length(edgeX);
-%     figure(4)
-%     plot(xPoints, edgeX, xPoints(minLocsX),edgeX(minLocsX),'r*');
-%     xlabel('N element in the edge')
-%     ylabel('solid.disp')
-%     title(['mode', num2str(modeNumber), '  y = 0   tuple ', num2str(tuples(ii))])
-%     
-    if isempty(minLocsX)~= 1
-        minPos(ii) = minLocsX(1)/xPoints(end);  
-    else
-        minPos(ii) = 0;
-    end 
+modesNames = table2cell(readtable('modesNames2.csv'));
+appears = zeros(length(modesNames(:,1)),nModes);
+for jj = 1:length(modesNames(:,1))
+    for ii =  1:length(appears(1,:))
+        exact_match_mask = strcmp(modesNames(:,ii), modesNames{jj,ii});
+        appears(jj,ii) = length(find(exact_match_mask));
+    end
 end
 
+[maxVal, maxLoc] = max(mean(appears.'));
 
-
-%% Check scatter or information from modeshapes
-v = inputsInfo(:,8:10);
-
-idxs = find(minPos == 0);
-v(idxs,:) = [];
-minPos(idxs) = [];
-maxLeft(idxs) = [];
-
-v = inputsInfo(:, 2)
-v(idxs,:) = [];
-figure()
-
-subplot(2,1,1)
-scatter(v(:,1), maxLeft);
-hold on 
-xlabel('vxy/vyz')
-ylabel('value of the peak')
-subplot(212)
-scatter(v(:,1), minPos);
-hold on 
-xlabel('vxy/vyz')
-ylabel('normalized minimum position')
-
-figure()
-
-for ii = 1:5
-subplot(3,2,ii)
-scatter(outputsInfo(:,ii), minPos);
-hold on 
-xlabel(['f',num2str(ii)])
-ylabel('norm min pos')
-
-end 
-%% CORRELATIONS OF INPUTS
+ 
+%% 6.1) CORRELATIONS OF INPUTS (check if they actually are gaussian)
 Cor = zeros(10,10);
 for m1 = 1:10 % Create correlations for each experimenter
  for m2 = 1:10 % Correlate against each experimenter
@@ -324,35 +273,34 @@ imagesc(Cor)
 colorbar();
 
 
-%% ACTUAL MULTILINEAR REGRESSION
+%% 6.2) MULTILINEAR REGRESSORS
 
-
-%% FROM ZERO
-
-%[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multilinearRegress(inputsInfo,outputsALLInfo);
-[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multilinearRegress(cleanInputsInfo,cleanOutputsALL);
+nModes = 20;
+[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multilinearRegress(inputsInfo,outputsALLInfo,nModes);
+%[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multilinearRegress(cleanInputsInfo,cleanOutputsALL);
 
 % Let's try and see where are outliers
 figure()
 toRemove = cell(length(linearModels),1);
 for ii = 1:length(linearModels)
-    subplot(5,2,ii)
+    subplot(5,5,ii)
     plotResiduals(linearModels{ii});
     hold on
     maxResidual = max(linearModels{ii}.Residuals.Raw);
-    if maxResidual > 10
-    limit = 0.35;
+    if maxResidual > 15
+    limit = 0.3;
     else
-        limit = 1.2;
+        limit = 0.95;
     end
-    toRemove{ii} = find(linearModels{ii}.Residuals.Raw > limit*maxResidual);
+    toRemove{ii} = find(abs(linearModels{ii}.Residuals.Raw) > limit*maxResidual);
     legend(['f',int2str(ii)])
 end
 
-%[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multRgrOutliers(inputsInfo,outputsALLInfo, toRemove);
-[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multRgrOutliers(cleanInputsInfo,cleanOutputsALL, toRemove);
+[linearModels,multilinCoeffs, R2n, errors, predictedOutputs] = multRgrOutliers(inputsInfo,outputsALLInfo, toRemove, nModes);
+%[linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multRgrOutliers(cleanInputsInfo,cleanOutputsALL, toRemove);
 
-%%
+%% 6.3) See how each frequency is correlated to the mechanical parameters
+
 normMultilinCoeffs = multilinCoeffs(2:end,:).*referenceVals';
 figure()
 imagesc(abs(normMultilinCoeffs(2:7,1:10)));
@@ -362,53 +310,63 @@ names = {'rho' 'Ex' 'Ey' 'Ez' 'Gxy' 'Gyz' 'Gxz' 'vxy' 'vyz' 'vxz'};
 freqz = {'f11' 'f02' 'f20' 'f12' 'f21'	'f03' 'f22'	'f30' 'f13'	'f31'};
 freqz = {'f11' 'f02' 'f20' 'f12' 'f21'	'f03' 'f22'	'f30' };
 axis off;
-hold on 
+hold on
 for ii = 1:max([length(names), length(freqz)])
     if ii <= length(freqz)
             text(ii,1, freqz{ii});
     end
     if ii <= length(names)
-    text(0,ii, names{ii});
+        text(0,ii, names{ii});
     end
 end
 
-%% SEE SCATTERPLOTS
-figure()
-scatter(outputsALLInfo(:,1), inputsInfo(:,8));
-xlabel('f_{11}')
-ylabel('v_{LR}')
+%% 7.1) MINIMIZATION OF THE ERROR 
 
-
-
-%% MINIMIZATION OF THE ERROR 
+% 1) first guess of mech parameters
 errors = zeros(size(outputsALLInfo(:,1)));
-% indexComsol = [1,2,3,4,5,6,8,9,10];
-% indexReal = 1:9;
-indexComsol = [1,2,3,4,5,7,9,10];
-indexReal = 1:8;
-
+indexComsol = [1,2,4,3,5,6,8,9,10];
+indexReal = 1:9;
 for ii = 1:length(outputsALLInfo(:,1))
     errors(ii) = norm((f0(indexReal)-outputsALLInfo(ii,indexComsol).')./f0(indexReal),2);
 end
 [minVals, minimumLoc] = min(errors);
 
-nRealizations = 10;
-freqMatrix = zeros(nRealizations,10); 
+% 2) setup for minimization
+nRealizations = 20;
+freqMatrix = zeros(nRealizations,length(indexReal)); 
 parsMatrix = zeros(nRealizations,10);
 gauss = randn(nRealizations,1);
 
+% I put those here to have a reference of the map we are using
+comsolIndex = [1,2,4,3,5,7,9,10,12,14,15,16].';
+realIndex =   [1,2,3,4,5,6,7,8,9,10,11,12].';
+% actual indexes used for the minimization
+indexComsol = [3,12,16].';
+indexReal = [4,9,12].';
 
+% 3) minimization process
 for ii = 1:nRealizations
     density = rho*(1+0.05*gauss(ii));
     [xpar, f_out, fval] = minimizeError(linearModels, inputsInfo, outputsALLInfo,...
-                                        f0,minimumLoc,density, indexComsol, indexReal, true);
-    freqMatrix(ii,:) = f_out.'; 
+                                        f0,minimumLoc,density, indexComsol, indexReal, false);
+    diff = (f0(realIndex) - f_out(comsolIndex))./f0(realIndex);                               
+    err = mean(abs(diff))*100; 
+% If you want to see the figure respresenting the estimation, uncomment it 
+%     figure()
+%     plot(realIndex, f_out(comsolIndex), '-o');
+%     hold on 
+%     plot(realIndex, f0(realIndex), '-x');
+%     xlabel('N mode')
+%     ylabel(' f     [Hz]');
+%     legend('fMultilin', 'fexp');   
+
+    freqMatrix(ii,:) = f_out(indexComsol).'; 
     parsMatrix(ii,:) = xpar.';
 end
-    
-freqMatrixDisplay = freqMatrix(:,indexComsol);
-meanFreq = mean(freqMatrixDisplay);
-varFreq = var(freqMatrixDisplay);
+
+% 4) mean and variance of the estimated eigenfrequencies
+meanFreq = mean(freqMatrix);
+varFreq = var(freqMatrix);
 
 figure() 
 plot(1:length(f0(indexReal)), f0(indexReal), '-o');
@@ -419,19 +377,18 @@ legend('fexp','fopt');
 xlabel('mode number  N' );
 ylabel('frequency    [Hz]');
 
-
+% 5) estimation of mechanical parameters and save restults
 meanMechParams = mean(parsMatrix);
 varianceMechParams1 = var(parsMatrix);
 
 
 finalStd = sqrt(mean( abs( parsMatrix - meanMechParams).^2 ))./meanMechParams;
-
-finalOut = array2table(meanMechParams, 'VariableNames', {'rho', 'Ex', 'Ey', 'Ez', 'Gxy', 'Gyz', 'Gxz', 'vxy', 'vyz', 'vxz'});
+varyingParamsNames = {'rho', 'Ex', 'Ey', 'Ez', 'Gxy', 'Gyz', 'Gxz', 'vxy', 'vyz', 'vxz'};
+finalOut = array2table(meanMechParams, 'VariableNames', varyingParamsNames);
 
 finalStdTable = array2table(finalStd*100, 'VariableNames', {'std rho [%]', 'std Ex [%]', 'std Ey [%]', 'std Ez [%]',...
                     'std Gxy [%]', 'std Gyz [%]', 'std Gxz [%]', 'std vxy [%]', 'std vyz [%]', 'std vxz [%]'});
-                
-                
+                              
 matlabStd = std(parsMatrix)./meanMechParams;
 myStdTable = array2table(finalStd*100, 'VariableNames', {'std rho [%]', 'std Ex [%]', 'std Ey [%]', 'std Ez [%]',...
                     'std Gxy [%]', 'std Gyz [%]', 'std Gxz [%]', 'std vxy [%]', 'std vyz [%]', 'std vxz [%]'});
@@ -439,11 +396,10 @@ matlabStdTable = array2table(matlabStd*100, 'VariableNames', {'std rho [%]', 'st
 'std Gxy [%]', 'std Gyz [%]', 'std Gxz [%]', 'std vxy [%]', 'std vyz [%]', 'std vxz [%]'});
 
 
-writeMat2File([meanMechParams; matlabStd*100],'Results68.csv', varyingParamsNames, 10,true); 
-writeMat2File(parsMatrix,'ResultsALL68.csv', varyingParamsNames, 10,true);
-%a = array2table(compare, 'VariableNames', {'f1' 'f2' 'f3' 'f4' 'f5' 'f7' 'f9' 'f10'}, 'RowNames', {'minimization' 'Comsol'})
+finalOutTable = writeMat2File([meanMechParams; matlabStd*100],'Results.csv', varyingParamsNames, 10,true); 
+writeMat2File(parsMatrix,'ResultsALL.csv', varyingParamsNames, 10,true);
 
-%% Check quality of the result  (eigenfrequency study)
+%% 7.2) Check quality of the result  (eigenfrequency study with estimated params)
 
  for jj = 1:length(varyingParamsNames)
                 model.param.set(varyingParamsNames(jj), meanMechParams(jj));
@@ -465,7 +421,8 @@ legend('real f0','Comsol - minimization');
 title('Real Eigenfrequencies vs simulated - minimization f1-f6 , f8-f10');
 
 writeMat2File(eigenFreqz,'EigenfreqzComsol.csv', {'f'}, 1,false); 
-%% EXPORT & COMPARE POINT RESPONSE OF FRF (frequency domain)
+
+%% 7.3) EXPORT & COMPARE POINT RESPONSE OF FRF (frequency domain with estimated parameters)
 
 % Perform modal analysis first
 
@@ -511,34 +468,55 @@ freqVals = [fAxis(end), fAxis(2)-fAxis(1), fAxis(1)];
     model.result.export('data1').set('sdim', 'fromdataset');
     exportData(model,'cpt1', dirName,['velpar'],'solid.u_tZ'); % velocity  
    
-    %% % e) Read Data on Matlab
-    [vel] = readTuples(['velRayleigh2f7.txt'], 1, false);
+    %% e) Read Data on Matlab and FRF comparison
+    [vel] = readTuples(['velCheck.txt'], 1, false);
     vel = vel(4:end);
     % h) Delete .txt files exported by Comsol
     %delete(['vel',int2str(ii),'par.txt']);
-    fAxis = 20:0.5:600;
+    fAxisComsol = 20:1:1200;
     ind = find(fAxis>=20);
     fAxis = fAxis(ind);
     %vel = vel(ind);
     [maxVals, maxLocs] = findpeaks(abs(vel)/max(abs(vel)));
-    f0Comsol = fAxis(maxLocs);
+    f0Comsol = fAxisComsol(maxLocs);
     Hvplot = Hv(ind);
     figure()
     plot(fAxis, abs(Hvplot/max(abs(Hvplot))), 'LineWidth',1.5);
     hold on;
-    plot( fAxis, abs(vel)/max(abs(vel)), 'LineWidth',1.5);
-    hold on ;
+    plot( fAxisComsol, abs(vel)/max(abs(vel)), 'LineWidth',1.5);     
     stem(f0, abs(Hv(fLocs)/max(abs(Hv(fLocs) ) ) ) );
-    hold on;
     stem(f0Comsol, abs(vel(maxLocs)/max(abs(vel(maxLocs)))));
-    
+    eigs = real([59.825+1.5991i
+                102.62+1.6647i
+                135.53+1.7385i
+                157.91+1.8004i
+                178.69+1.8664i
+                277.82+2.2929i
+                291.46+2.3660i
+                326.79+2.5719i
+                372.22+2.8713i
+                409.89+3.1490i
+                464.85+3.6020i
+                516.20+4.0769i
+                525.28+4.1660i
+                570.73+4.6356i
+                688.73+6.0364i
+                699.94+6.1831i
+                729.89+6.5867i
+                760.56+7.0177i
+                830.41+8.0651i
+                858.67+8.5148i]);
+                
+    stem(eigs, ones(size(eigs)));
     
     xlabel('f    [Hz]');
     ylabel(' |H_v(f)| ');
     legend('real FRF', 'simulated FRF','real peaks', 'Comsol peaks');
     title('Real vs simulated FRF ');
     
-    fAxis = 20:0.5:600;
+%% 7.4) check the Q factor values for simulated and real FRFs
+    
+    fAxis = 20:0.5:fHigh;
     [Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,1e-3, 3);
     f0 = f0(2:end); csis = csis(2:end); Q = Q(2:end); fLocs = fLocs(2:end);
     %fAxis = 50:0.5:600;
@@ -549,15 +527,110 @@ freqVals = [fAxis(end), fAxis(2)-fAxis(1), fAxis(1)];
     writeMat2File(Qs,'Qs.csv', {'Q'}, 1,false); 
 
     
-%% TRY MULTIQUADRATIC REGRESSION
-quadCoeffs = zeros(10,10);
-statistics = cell(10);
-for ii = 1:10
-    [p,S] = polyfit(inputsInfo, outputsALLInfo,2);
-    multilinCoeffs(:,ii) = p(1:10);
-    multilin95Confidence(:, ii*2-1:ii*2) =  bint(1:10,:);
-    statistics(ii,:) = stats;
+    
+%% 8.1) STUDY MINIMIZATION ERROR
+
+% setup
+comsolIndex = [1,2,4,3,5,7,9,10,12,14,15,16].';
+realIndex = [1,2,3,4,5,6,7,8,9,10,11,12].';
+presentModes = {'f11' 'f02' 'f20' 'f12' 'f21' 'f22' 'f30' 'f31' 'f32' 'f05' 'f15' };
+
+errors = zeros(size(outputsALLInfo(:,1)));
+for ii = 1:length(outputsALLInfo(:,1))
+    errors(ii) = norm((f0(realIndex)-outputsALLInfo(ii,comsolIndex).')./f0(realIndex),2);
+end
+[minVals, minimumLoc] = min(errors);
+
+errs = cell(5,1);
+params = cell(5,1);
+freqz = cell(5,1);
+nFreq =  length(comsolIndex);
+nMP = 10;
+
+% minimization with permutations of the indexes
+for jj = 10
+
+    comsolPermute = nchoosek(comsolIndex,jj);
+    disp(length(comsolPermute(:,1)));
+    realPermute = nchoosek(realIndex,jj);
+
+    % preallocate
+    errs{jj} = cell(length(comsolPermute(:,1)),jj+2);
+    params{jj} = cell(length(comsolPermute(:,1)), jj + nMP );
+    freqz{jj} = cell(length(comsolPermute(:,1))+1, jj+nFreq);
+
+    freqz{jj}(1,1:nFreq) = num2cell(f0(realIndex));
+
+    for ii = 1:length(comsolPermute(:,1))
+        
+        [xpar, f_out, fval] = minimizeError(linearModels, inputsInfo, outputsALLInfo,...
+                                            f0,minimumLoc,rho, comsolPermute(ii,:), realPermute(ii,:), false);
+        % error                                
+        diff = (f0(realIndex) - f_out(comsolIndex))./f0(realIndex);                                
+        errs{jj}{ii,1} = mean(abs(diff))*100; 
+        % mech Params and eigenfrequencies
+        params{jj}(ii,1:nMP) = num2cell(xpar);
+        freqz{jj}(ii+1,1:nFreq) = num2cell(f_out(comsolIndex).');
+        
+        % comment the figure for speed
+        figure()
+        plot(realIndex, f_out(comsolIndex), '-o');
+        hold on 
+        plot(realIndex, f0(realIndex), '-x');
+        xlabel('N mode')
+        ylabel(' f     [Hz]');
+        legend('fMultilin', 'fexp');
+        
+        % labeling for used modeshapes in the minimization
+        for kk = 1:length(comsolPermute(ii,:))
+            errs{jj}{ii,kk+1} = modesNames{1,comsolPermute(ii,kk)}; 
+            params{jj}{ii, kk+ nMP} = modesNames{1,comsolPermute(ii,kk)};
+            freqz{jj}{ii+1, kk+ nFreq} = modesNames{1,comsolPermute(ii,kk)};
+        end
+        
+        % label if there are negative mech parameters or not
+        check = find(xpar<0);
+        errLength = length(errs{jj}(ii,:));
+        if isempty(check)
+            errs{jj}{ii, end}  = 'positive MP';        
+        else
+            errs{jj}{ii, end} = 'negative MP';
+        end
+        
+        % check results at each iteration
+        params{jj}(ii,:)
+        freqz{jj}(ii+1,:)
+        errs{jj}(ii,:)
+    end
 end
 
-statTable = array2table(statistics, 'VariableNames', {'R^2 stat'  'F stat'   'pValue'  'errorVariance'},...
-   'RowNames',{'f1' 'f2' 'f3' 'f4' 'f5' 'f6' 'f7' 'f8' 'f9' 'f10'});
+
+%% 8.2) Save results from minimization study
+% save mechParams and eigenfrequencies
+for ii = 1:5
+    varyingParamsNames = {'rho', 'Ex', 'Ey', 'Ez', 'Gxy', 'Gyz', 'Gxz', 'vxy', 'vyz', 'vxz'};
+    freqzNames = {'f1' 'f2' 'f3' 'f4' 'f5' 'f6' 'f7' 'f8' 'f9' 'f10' 'f11' 'f12'};
+    N = length(varyingParamsNames);
+    M = length(freqzNames);
+    for tt = 1:ii
+    varyingParamsNames{N+tt} = ['used f', int2str(tt)];
+    freqzNames{M+tt} = ['used f', int2str(tt)];
+    end
+
+    writeMat2File(paramms{ii},['mechParams',int2str(ii),'.csv'], varyingParamsNames, length(varyingParamsNames),true);     
+    writeMat2File(freqqz{ii},['eigenfreqz',int2str(ii),'.csv'], freqzNames, length(freqzNames),true);   
+end
+
+% save errors
+errs1Table = sortrows(cell2table(errs{1}, 'VariableNames', {'err [%]', 'used f1', 'Mech params'}));
+errs2Table = sortrows(cell2table(errs{2}, 'VariableNames', {'err [%]', 'used f1','used f2', 'Mech params'}));
+errs3Table = sortrows(cell2table(errs{3}, 'VariableNames', {'err [%]', 'used f1','used f2','used f3', 'Mech params'}));
+errs4Table = sortrows(cell2table(errs{4}, 'VariableNames', {'err [%]', 'used f1','used f2','used f3', 'used f4', 'Mech params'}));
+errs5Table = sortrows(cell2table(errs{5}, 'VariableNames', {'err [%]', 'used f1','used f2','used f3', 'used f4','used f5', 'Mech params'}));
+
+writetable(errs1Table,'errs1.csv');
+writetable(errs2Table,'errs2.csv');
+writetable(errs3Table,'errs3.csv');
+writetable(errs4Table,'errs4.csv');
+writetable(errs5Table,'errs5.csv');
+

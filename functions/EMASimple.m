@@ -58,7 +58,7 @@ function [Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,minPeakVal, minPeakWid
             shapes(ii) = -imag(Hv(fLocs(ii))*c*w_nat(ii));
         end
         
-        subplot(4,3,ii)
+        subplot(5,5,ii)
           
         plot(subBandFreq, subBand,'LineWidth',1.8)
         hold on 
