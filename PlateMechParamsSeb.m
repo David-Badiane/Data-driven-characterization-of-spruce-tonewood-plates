@@ -78,7 +78,6 @@ for ii = 10:nSim
     model.component('comp1').geom('geom1').feature('imp1').set('mesh', 'mpart1');
     model.component('comp1').mesh('mesh1').run;
     model.mesh('mpart1').feature('imp1').importData;
-    model.component('comp1').geom('geom1').run('ige1');
     
     model.study('std1').run(); 
 
