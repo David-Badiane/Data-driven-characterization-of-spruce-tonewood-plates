@@ -181,7 +181,7 @@ end
 
 %cd(simFolder)
  nModes = 20;
- nSim = 120;
+ nSim = 232;
  
 % names obtained (if you want to obtain them again, just uncomment what is
 % commented )
@@ -198,10 +198,10 @@ for ii = 1:nSim
 end
 
 
-cd('C:\Users\utente\.comsol\v56\llmatlab\csv')
+cd('C:\Users\utente\.comsol\v56\llmatlab\csv3')
 
 % comment this if you want to obtain modeshape names
-namesTable  = writeMat2File(modesNames,'modesNames3.csv', {'f'}, 1,false);
+namesTable  = writeMat2File(modesNames,'modesNames.csv', {'f'}, 1,false);
 
 
 %% 5.2) Check the results from modeshapes analysis to find Poisson plates ( ignore, already done in 4) )
@@ -272,17 +272,24 @@ nModes = 20;
 % Let's try and see where are outliers
 figure()
 toRemove = cell(length(linearModels),1);
+flipping = {'f12' 'f20'};
 for ii = 1:length(linearModels)
-    subplot(5,5,ii)
-    plotResiduals(linearModels{ii});
-    hold on
-    maxResidual = max(abs(linearModels{ii}.Residuals.Raw));
-    if maxResidual > 10
-    limit = 0.3;
-    else
-        limit = 0.9;
+%     subplot(5,5,ii)
+%     plotResiduals(linearModels{ii});
+%     hold on
+%     maxResidual = max(abs(linearModels{ii}.Residuals.Raw));
+%     if maxResidual > 15
+%     limit = 0.38;
+%     else
+%         limit = 0.9;
+%     end
+
+    if ii == 3 || ii == 4
+        
+        exact_match_mask = strcmp(modesNames(:,3), flipping{ii-2});
+        toRemove{ii} = find(exact_match_mask); 
     end
-    toRemove{ii} = find(abs(linearModels{ii}.Residuals.Raw) > limit*maxResidual);
+%     toRemove{ii} = find(abs(linearModels{ii}.Residuals.Raw) > limit*maxResidual);
     legend(['f',int2str(ii)])
 end
 
@@ -327,11 +334,12 @@ nRealizations = 20;
 maxLoc;
 
 % I put those here to have a reference of the map we are using
-comsolIndex = [1,2,4,3,5,7,9,10,12,14,15,16].';
+comsolIndex = [1,2,3,4,5,7,9,10,11,14,16,17].';
 realIndex =   [1,2,3,4,5,6,7,8,9,10,11,12].';
 % actual indexes used for the minimization
-indexComsol = [1,2,4,15].';
-indexReal = [1,2,3,11].';
+displayIndex = [1,2,3,4,5,5,6,6,7,8,9,9,9,10,10,11,12,12,12,12].';
+indexComsol = [1,2,5,14].';
+indexReal = [1,2,5,10].';
 
 freqMatrix = zeros(nRealizations,length(indexReal)); 
 parsMatrix = zeros(nRealizations,10);
@@ -346,7 +354,7 @@ for ii = 1:nRealizations
     err = mean(abs(diff))*100
 % If you want to see the figure respresenting the estimation, uncomment it 
     figure()
-    plot(realIndex, f_out(comsolIndex), '-o');
+    plot(displayIndex, f_out, '.', 'markerSize', 10);
     hold on 
     plot(realIndex, f0(realIndex), '-x');
     xlabel('N mode')
@@ -451,11 +459,11 @@ model.result.export('data1').set('sdim', 'fromdataset');
 exportData(model,'cpt1', dirName,['velpar'],'solid.u_tZ'); % velocity  
 
 %% e) Read Data on Matlab and FRF comparison
-[vel] = readTuples(['velf7.txt'], 1, false);
+[vel] = readTuples(['velCheck.txt'], 1, false);
 vel = vel(4:end);
 % h) Delete .txt files exported by Comsol
 %delete(['vel',int2str(ii),'par.txt']);
-fAxisComsol = 20:0.5:600;
+fAxisComsol = 20:1:1200;
 ind = find(fAxis>=20);
 fAxis = fAxis(ind);
 %vel = vel(ind);
@@ -513,7 +521,6 @@ xlabel('frequency');
 ylabel('amplitude');
 title('first 8 eigenfrequencies');
 plot(f0(toView), ampsReal, '.', 'markerSize' ,10)
-legend('Comsol', 'experimental');
 
 pointsComsol = [f0Comsol(toView), ampsComsol.'];
 pointsReal = [f0(toView), ampsReal];
@@ -529,6 +536,7 @@ for ii = 1:length(toView)
     lineAmps = [ampsReal(ii), ampsComsol(minLoc)];
     plot(lineFreqz, lineAmps);
 end
+    legend('Comsol', 'experimental', 'f1', 'f2' , 'f3', 'f4', 'f5', 'f6','f7', 'f8');
 
 %% Convergence test for choosing correct mesh
 
@@ -577,7 +585,7 @@ fun = @(x) minimizationComsolBased(x,  model, f0, fAmps, constraintWeight, param
 
 options = optimset('fminsearch');
 options = optimset(options, 'TolFun',1e-8,'TolX',1e-8, 'MaxFunEvals',5e3,'MaxIter', 5e3,...
-    'DiffMinChange', 1, 'DiffMaxChange', 200); 
+    'DiffMinChange', 150, 'DiffMaxChange', 300); 
  
 [xpar,fval, exitflag, output] = fminsearch(fun, mechParameters_1stguess, options);
 

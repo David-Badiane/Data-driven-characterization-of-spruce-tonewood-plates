@@ -14,7 +14,6 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
 
     evalFreqz = mpheval(model,'solid.freq','Dataset','dset1','edim',0,'selection',1);
     eigenFreqz = real(evalFreqz.d1');
-    eigenFreqz = eigenFreqz(eigenFreqz<600);
     eigenFreqz = eigenFreqz(:);
     
     model.study('std2').feature('freq').set('plist', num2str(eigenFreqz.'));
@@ -31,13 +30,13 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
     [vel] = readTuples(['vel.txt'], 1, false);
     vel = vel(4:end);
     
-    toView = 1:8;
+    NpeaksAxis = 1:8;
     ratio = fAmps(1:5)./abs(vel(1:5)).';
     factor = mean(ratio);
     
     ampsComsol = factor * abs(vel);
     ampsReal =  fAmps;
-    factorAmp = mean(f0(toView)./(ampsReal(toView)) );
+    factorAmp = mean(f0(NpeaksAxis)./(ampsReal(NpeaksAxis)) );
     ampsComsol = factorAmp*ampsComsol;
     ampsReal = factorAmp*ampsReal;
 
@@ -47,31 +46,40 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
     xlabel('frequency');
     ylabel('amplitude');
     title('first 8 eigenfrequencies');
-    plot(f0(toView), ampsReal(toView), '.', 'markerSize' ,10)
+    plot(f0(NpeaksAxis), ampsReal(NpeaksAxis), '.', 'markerSize' ,10)
     
 
     pointsComsol = [eigenFreqz, ampsComsol.'];
-    pointsReal = [f0(toView), ampsReal(toView)];
+    pointsReal = [f0(NpeaksAxis), ampsReal(NpeaksAxis)];
 
-    minimumDistantPoints = zeros(2, length(toView));
+    minimumDistantPoints = zeros(2, length(NpeaksAxis));
 
     err = 0;
+    pastLoc = [];
     
-    for ii = 1:length(toView)
+    for ii = 1:length(NpeaksAxis)
         dist = sqrt(100*(pointsReal(ii,1) - pointsComsol(:,1)).^2 + (pointsReal(ii,2) - pointsComsol(:,2)).^2);
         [minDist, minLoc] = min(dist);
         minimumDistantPoints(:,ii) =  pointsComsol(minLoc,:);
-
+        if ii == 1
+            pastLoc = 100;
+        end
+        
+        err = err + (abs(pastLoc - minLoc) *100+0.01).^-1;
+        
         lineFreqz =  [f0(ii), eigenFreqz(minLoc)];
         lineAmps = [ampsReal(ii), ampsComsol(minLoc)];
 
-        err = err + sqrt(100*( ( (lineFreqz(1) - lineFreqz(2))/lineFreqz(1) )^2 + (lineAmps(1) - lineAmps(2))^2 ));
+        err = err + sqrt(100*( ( (lineFreqz(1) - lineFreqz(2))/lineFreqz(1) )^2 + 5*(lineAmps(1) - lineAmps(2))^2 ));
         plot(lineFreqz, lineAmps);
+        pastLoc = minLoc;
     end
     legend('Comsol', 'experimental', 'f1', 'f2' , 'f3', 'f4', 'f5', 'f6','f7', 'f8');
     hold off;
     tElapsed = toc(tstart);
     disp(tElapsed);
+    disp(err);
+    pause(0.8);
     
 %      err = 0;
 %      indexes = [3,5,6,7,8,9];    
@@ -79,7 +87,7 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
 %         err = err + constraintWeight*(mechParams(indexes(ii)) - referenceVals(indexes(ii)))^2; 
 %      end
      
-%      for ii = 1:length(toView)
+%      for ii = 1:length(NpeaksAxis)
 %         err = err + ( (f0(ii) - minimumDistantPoints(1,ii)) /f0(ii))^2 + ...
 %                     ( (fAmps(ii) - minimumDistantPoints(2,ii)) / fAmp(ii) )^2;
 %      end
