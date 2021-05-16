@@ -10,7 +10,7 @@ outputFiletype = '.csv';
 
 %% 1) SET UP PARAMETERS FOR SIMULATIONS
 
-model = mphopen('PlateMechParams2');
+model = mphopen('PlateMechParamsSeb');
 % Parameters setup
 params = mphgetexpressions(model.param);                  % get initial parameters                          
 % get parameters names
@@ -47,7 +47,7 @@ csvPath = [baseFolder,'\csv'];
 simFolder = [baseFolder,'\Simulations'];
 
 cd(baseFolder)
-nSim = 12;
+nSim = 5;
 %model = mphopen('PlateMechParams2');
 outputsALLInfo = [];
 outputsInfo = [];
@@ -63,7 +63,7 @@ model.result.export('data1').set('data', 'dset1');
 model.study('std1').feature('eig').set('shift', '2[Hz]');
 
 
-for ii = 10:nSim
+for ii = 1:nSim
     cd(simFolder);
     % import a mesh
     meshFilename = [baseFolder,'\mesh' int2str(ii) ,'.stl'];
@@ -123,9 +123,9 @@ for ii = 1:nSim
         figure(100)
         subplot (6,6,count)
         z = modesData(:,jj);
-        idx = find(z<= 1e-7);
+        idx = find(z<= 1);
         plot3(meshData(idx,1),meshData(idx,2),z(idx), '.', 'markerSize', 4);
-        view(0,90);
+        %view(0,90);
 %         xlabel('x  [mm]');
 %         ylabel('y  [mm]');
 %         zlabel('z  [mm]');

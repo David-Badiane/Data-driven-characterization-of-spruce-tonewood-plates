@@ -1,4 +1,4 @@
-function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constraintWeight,paramsNames, referenceVals)
+function [err] = minimizationComsolBased2(mechParams, model, f0, fAmps, constraintWeight,paramsNames, referenceVals,create)
 %MINIMIZATIONCOMSOLBASED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,12 +9,18 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
 %     hold on;
 %     for jj = 1:length(beta)
 %     legendNames{jj} = ['beta = ', num2str(beta(jj))];
+    if create
+       [files] = fastOpen({'fDistPerc' 'fDistScale' 'ADist' 'ParamsEvolution' 'EigFreqz' },'w', '.csv');
+       fclose('all');
+    end
+
     
-%     fDistPerc = table2array(readtable('fDistPerc.csv'));
-%     fDistScale = table2array(readtable('fDistScale.csv'));
-%     ADist = table2array(readtable('ADist.csv'));
-%     ParamsEvolution = table2array(readtable('ParamsEvolution.csv'));
-%     eigFreqz = table2array(readtable('EigFreqz.csv'));
+    fDistPerc = table2array(readtable('fDistPerc.csv'));
+    fDistScale = table2array(readtable('fDistScale.csv'));
+    ADist = table2array(readtable('ADist.csv'));
+    ParamsEvolution = table2array(readtable('ParamsEvolution.csv'));
+    eigFreqz = table2array(readtable('EigFreqz.csv'));
+    nModes = 15;
     
     model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').set('alpha_dM',mechParams(end-1));
     model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').set('beta_dK',mechParams(end));
@@ -24,7 +30,7 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
     for ii = (1:length(mechParams))
         model.param.set(paramsNames(ii), mechParams(ii));
     end
-    nModes = 15;
+    
     model.study('std1').feature('eig').set('neigs', int2str(nModes));
     model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').active(false);
     model.study('std1').run(); 
@@ -97,7 +103,7 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
     
     for ii = 1:length(NpeaksAxis)
         ampsDiff = pointsReal(ii,2) - pointsComsol(:,2);
-        freqDiff = (pointsReal(ii,1) - pointsComsol(:,1))./(pointsComsol(:,1));
+        freqDiff = (pointsReal(ii,1) - pointsComsol(:,1))./(pointsReal(ii,1));
         dist = sqrt(( psi* freqDiff).^2 + (ampsDiff).^2);
         [minDist, minLoc] = min(dist);
         minimumDistantPoints(:,ii) =  pointsComsol(minLoc,:);
@@ -121,21 +127,23 @@ function [err] = minimizationComsolBased(mechParams, model, f0, fAmps, constrain
         distFreq(ii) = (freqDiff(minLoc));
         distAmp(ii) = (ampsDiff(minLoc));
         selectedFreqz(ii) = eigenFreqz(minLoc);
+        
     end
 
-%     fDistPerc = [fDistPerc; 100*distFreq];
-%     fDistScale = [fDistScale; psi*distFreq];
-%     ADist = [ADist; distAmp];
-%     ParamsEvolution = [ParamsEvolution; mechParams];
-%     eigFreqz = [eigFreqz; selectedFreqz];
-%     
-%     writeMat2File(fDistPerc,'fDistPerc.csv', {'[%] f'}, 1,false);     
-%     AmpsRefMat2File(fDistScale,'fDistScale.csv', {'f'}, 1,false);    
-%     writeMat2File(ADist,'ADist.csv', {'f'}, 1,false);
-%     writeMat2File(ParamsEvolution,'ParamsEvolution.csv',...
-%         {'Ex' 'Ey' 'Ez' 'Gxy' 'Gyz' 'Gxz' 'vxy' 'vyz' 'vxz' 'alpha' 'beta'}, 11, true);
-%     writeMat2File(eigFreqz,'EigFreqz.csv', {'f'}, 1,false);
-%      
+    fDistPerc = [fDistPerc; 100*distFreq];
+    fDistScale = [fDistScale; psi*distFreq];
+    ADist = [ADist; distAmp];
+    ParamsEvolution = [ParamsEvolution; mechParams];
+    eigFreqz = [eigFreqz; selectedFreqz];
+    
+    writeMat2File(fDistPerc,'fDistPerc.csv', {'[%] f'}, 1,false);     
+    writeMat2File(fDistScale,'fDistScale.csv', {'f'}, 1,false);    
+    writeMat2File(ADist,'ADist.csv', {'f'}, 1,false);
+    writeMat2File(ParamsEvolution,'ParamsEvolution.csv',...
+        {'Ex' 'Ey' 'Ez' 'Gxy' 'Gyz' 'Gxz' 'vxy' 'vyz' 'vxz' 'alpha' 'beta'}, 11, true);
+    writeMat2File(eigFreqz,'EigFreqz.csv', {'f'}, 1,false);
+
+    
     disp('freqDist');
     disp(distFreq);
     disp('ampDist');
