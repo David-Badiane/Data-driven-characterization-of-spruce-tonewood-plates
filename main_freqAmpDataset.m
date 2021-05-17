@@ -11,6 +11,8 @@ addpath ([baseFolder, '\functions']);
 addpath ([baseFolder, '\data']);
 addpath(csvPath);
 
+comsolModel = 'PlateMechParams_WithStudy';
+
 infosTable = readtable("sampleMeasurements.xlsx");
 infosMatrix = table2array(infosTable(:,3:end));
 infosMatrix(:,1:2) = infosMatrix(:,1:2)*0.01;
@@ -64,7 +66,7 @@ fAmps = abs(Hv(fLocs));
 %% 1.1)  Convergence test for choosing correct mesh
 
 % setup
-model = mphopen('PlateMechParams_WithStudy');
+model = mphopen(comsolModel);
 nModes = 15;
 meshSizes = {'C+++', 'C++', 'C+', 'C', 'N', 'F', 'F+' , 'F++', 'F+++'};
 convergenceNames = {'Eig Error [%]'  'FD Error [%]' 'Eig Time [s]' 'FD Time [s]'};
@@ -88,7 +90,7 @@ writetable(magnitudeTable,'Magnitude.csv');
 %% 2) SET UP PARAMETERS FOR SIMULATIONS
 
 % open Comsol model
-model = mphopen('PlateMechParams');
+model = mphopen(comsolModel);
 % Parameters setup
 params = mphgetexpressions(model.param);                  % get initial parameters                          
 % get parameters names
@@ -109,12 +111,31 @@ end
 Ex = mechParams(1);
 referenceVals = [rho, Ex, Ex*0.078, Ex*0.043,...
                  Ex*0.061, Ex*0.064, Ex*0.003,...
-                 0.467, 0.372, 0.435];
+                 0.467, 0.372, 0.435, 19, 7e-6];
+             
 %% NEW DATASET GENERATION
+% setup variables 
+writeNow = true; % do you want to rewrite present files ? 
+simFolder = [baseFolder,'\Simulations'];
+cd(baseFolder)
+% set if you want to write new csv files
+writeNew = false;
+% number of simulations
+nSim = 300;
+% Comsol model
+model = mphopen(comsolModel);
+% Comsol number of eigenfrequencies computed
+nModes = 20;  
+
+meshSize = 6;
+model.mesh('mesh1').feature('size').set('hauto', int2str(meshSize));
+model.mesh('mesh1').run;
+
+standardDev = [0.1*ones(1,10), 0.25*ones(1,2)];
              
-             
-             
-             
+[FA_Info, inputsTable, outputsEigTable, outputsAmpTable] = comsolRoutineFreqAmp(model, nSim, nModes, referenceVals,...
+                                   varyingParamsNames,  standardDev,  simFolder, csvPath, writeNow)
+
 %% 7.2) Check quality of the result  (eigenfrequency study with estimated params)
 
  for jj = 1:length(varyingParamsNames)
@@ -193,7 +214,7 @@ hold on;
 plot( fAxisComsol, abs(vel)/max(abs(vel)), 'LineWidth',1.5);     
 stem(f0, abs(Hv(fLocs)/max(abs(Hv(fLocs) ) ) ) );
 stem(f0Comsol, abs(vel(maxLocs)/max(abs(vel(maxLocs)))));
-eigs = real([ ... ]);
+eigs = real([ ]);
 
 stem(eigs, ones(size(eigs)));
 
@@ -238,7 +259,7 @@ end
 
 %% Minimization 2 - narrow band frequency domain studies
     
-model = mphopen('PlateMechParams_WithStudy');
+model = mphopen(comsolModel);
 
 fAmps = abs(Hv(fLocs));
 
@@ -282,7 +303,7 @@ cd('C:\Users\utente\.comsol\v56\llmatlab\codesStudy - Parameters - shear\MinComs
 %% GENERATE DATA FOR LOSS FUNCTION EVALUATION AND STUDY
 cd(baseFolder);
 
-model = mphopen('PlateMechParams_WithStudy');
+model = mphopen(comsolModel);
 mechParameters = table2array(readtable('Results68.csv'));
 mechParameters_1stguess = [mechParameters(1,:), 19, 7e-6];
 

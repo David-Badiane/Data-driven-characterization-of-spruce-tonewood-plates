@@ -136,6 +136,11 @@ model.result.export('data1').set('data', 'dset1');
 
 [inputsInfo, inputsTable, outputsALLInfo, outputsALLTable] = comsolRoutineEigenfrequency(model, nSim, nModes, simFolder, csvPath, varyingParamsNames, referenceVals, standardDev,writeNow)
 
+%% Reuse) read files
+
+inputsInfo = table2array(readtable('inputs.csv'));
+outputsALLInfo = table2array(readtable('outputsALL.csv'));
+
 %% 4) LOOK FOR POISSON PLATES (if present)
 
 L = Ls(1)
@@ -159,12 +164,12 @@ end
 %% 5 ) Analyze Modeshapes
 minimumThreshold = 1e-7;
 % obtain csvPath at section 1
-nSim = 3;
+nSim = 200;
 nModes = 20;
 simFolder = [baseFolder, '\Simulations'];
 modesFilename = 'modesNames.csv';
-
-[modesNames, namesTable] = obtainModesNames(nSim, nModes,minimumThreshold, csvPath,simFolder, modesFilename);
+%Time consuming, if modesNames are already obtained, comment
+%[modesNames, namesTable] = obtainModesNames(nSim, nModes,minimumThreshold, csvPath,simFolder, modesFilename);
 modesNames = table2array(readtable(modesFilename));
 [appears,maxLoc] = modesOrderAnalysis(nModes, csvPath, modesFilename)
 
@@ -229,7 +234,7 @@ end
 [minVals, minimumLoc] = min(errors);
 
 % 2) setup for minimization
-nRealizations = 5;
+nRealizations = 20;
 % Check section 4, using where appears most
 maxLoc;
 plotData = true;
