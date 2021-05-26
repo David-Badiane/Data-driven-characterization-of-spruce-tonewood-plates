@@ -1,6 +1,7 @@
- function [freqIndexes, coarseIndexes] = findSubBands(Hv, fAxis, fAmps, fLocs, deltafLocs)
+ function [freqIndexes, coarseIndexes] = findSubBands(Hv, fAxis, fAmps, fLocs, deltafLocs, plotData)
 %FIND707BAND Summary of this function goes here
 %   Detailed explanation goes here
+    if plotData
      figure()
      semilogy(fAxis, abs(Hv)/max(abs(Hv)), 'lineWidth', 1.2);
      xlabel('frequency  [Hz]')
@@ -8,7 +9,7 @@
      hold on;
      stem(fAxis(fLocs),fAmps/max(fAmps));
      hold on;
-     
+    end
      freqIndexes = zeros(length(fLocs),2);
      coarseIndexes = zeros(length(fLocs),2);
      

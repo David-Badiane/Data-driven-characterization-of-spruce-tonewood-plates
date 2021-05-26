@@ -1,4 +1,4 @@
-function [Hv,f0, fLocs, csis, Q] = EMAPoly(HvSVD, fAxis,minPeakVal, minPeakWidth)
+function [Hv,f0, fLocs, csis, Q] = EMAPoly(HvSVD, fAxis,minPeakVal, minPeakWidth, plotData)
 %EMASimple
 %
 %   Simplified modal analysis algorithm retrieving eigenfrequencies, modal
@@ -25,12 +25,14 @@ function [Hv,f0, fLocs, csis, Q] = EMAPoly(HvSVD, fAxis,minPeakVal, minPeakWidth
 %      for ii = 1:length(fLocs)
 %          stem(fAxis(fLocs(ii)),fAmps(ii));
 %      end
-    [freqIndexes, coarseIndexes] = findSubBands(Hv, fAxis, fAmps, fLocs, deltafLocs); 
+    [freqIndexes, coarseIndexes] = findSubBands(Hv, fAxis, fAmps, fLocs, deltafLocs, plotData); 
     bandsLength = freqIndexes(:,2)-freqIndexes(:,1);
     
     csis   = 100*ones(length(fLocs),1);
     shapes = zeros(length(fLocs),1);
-    figure()
+    if plotData
+        figure()
+    end
     for ii = 1:length(freqIndexes(:,1))
         subBand = Hv(freqIndexes(ii,1):freqIndexes(ii,2));
         subBand = abs(subBand)/max(abs(subBand));
@@ -57,7 +59,7 @@ function [Hv,f0, fLocs, csis, Q] = EMAPoly(HvSVD, fAxis,minPeakVal, minPeakWidth
             c=2*w_nat(ii)*csis(ii);
             shapes(ii) = -imag(Hv(fLocs(ii))*c*w_nat(ii));
         end
-        
+        if plotData
         subplot(4,3,ii)
           
         plot(subBandFreq, subBand,'LineWidth',1.8)
@@ -69,6 +71,7 @@ function [Hv,f0, fLocs, csis, Q] = EMAPoly(HvSVD, fAxis,minPeakVal, minPeakWidth
         xlabel('f  [Hz]')
         ylim([0.2,1]);
         yticks([0,0.707, 1]);
+        end
     end
     Q = 1./(2*csis);
 end

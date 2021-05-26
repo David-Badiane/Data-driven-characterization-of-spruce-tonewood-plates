@@ -1,4 +1,4 @@
-function [NMSE] = NMSE(measSig,simSig,ii)
+function [NMSE] = NMSE(measSig,simSig,ii, outNames)
 %NMSE calculates the normalised mean square error
 %   
 % simSig  (array) = simulated signal
@@ -17,7 +17,7 @@ NMSE = 1/length(measSig) * sum((diff).^2)*100;
 figure(100)
 subplot(5,5,ii)
 hist(diff,20);
-title(['f', num2str(ii)]);
+title(outNames{ii});
 xlabel(' Y - Y*')
 ylabel('N ')
 

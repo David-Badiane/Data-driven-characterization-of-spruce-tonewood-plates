@@ -2,7 +2,7 @@ clear all;
 close all;
 
 
-%% Initial setup
+%% 0) Initial setup
 
 % Reference folders
 baseFolder = pwd;
@@ -51,7 +51,7 @@ fAxis = f(f <= fHigh);
 [HvSVD,threshold,singularVals] = SVD(H1_v, fAxis, M, thresholdPerc, sampleNames, jj);
     
 % 2) MODAL ANALYSIS
-[Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,1e-4, 3);
+[Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,1e-4, 3,false);
 f0 = f0(2:end);
 fLocs = fLocs(2:end);
 csis = csis(2:end);
@@ -113,15 +113,14 @@ referenceVals = [rho, Ex, Ex*0.078, Ex*0.043,...
                  Ex*0.061, Ex*0.064, Ex*0.003,...
                  0.467, 0.372, 0.435, 19, 7e-6];
              
-%% NEW DATASET GENERATION
+%% 3) NEW DATASET GENERATION
 % setup variables 
-writeNow = true; % do you want to rewrite present files ? 
 simFolder = [baseFolder,'\Simulations'];
-cd(baseFolder)
+ cd(baseFolder)
 % set if you want to write new csv files
-writeNew = false;
+writeNow = false;
 % number of simulations
-nSim = 300;
+nSim = 1000;
 % Comsol model
 model = mphopen(comsolModel);
 % Comsol number of eigenfrequencies computed
@@ -132,10 +131,151 @@ model.mesh('mesh1').feature('size').set('hauto', int2str(meshSize));
 model.mesh('mesh1').run;
 
 standardDev = [0.1*ones(1,10), 0.25*ones(1,2)];
-             
-[FA_Info, inputsTable, outputsEigTable, outputsAmpTable] = comsolRoutineFreqAmp(model, nSim, nModes, referenceVals,...
-                                   varyingParamsNames,  standardDev,  simFolder, csvPath, writeNow)
 
+%[Dataset_FA2, inputsTable, outputsEigTable, outputsAmpTable] = comsolRoutineFA_Inputs(model, nSim, nModes, referenceVals,...
+%                                    varyingParamsNames,  standardDev,  simFolder, csvPath);  
+                                
+[Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRoutineFreqAmp(model, nSim, nModes, referenceVals,...
+                                   varyingParamsNames,  standardDev,  simFolder, csvPath, writeNow)
+               
+                               
+%% 4) FETCH DATASET - (import csv )
+Dataset_FA = struct('inputs',[] ,'outputsEig',[] ,'outputsAmp',[] );
+Dataset_FA.inputs = table2array(readtable('inputs.csv'));
+Dataset_FA.outputsEig = table2array(readtable('outputsEig.csv'));
+Dataset_FA.outputsAmp = table2array(readtable('outputsAmp.csv'));
+
+%% 5) LOOK FOR POISSON PLATES (if present)
+simFolder = [baseFolder, '\Simulations'];
+
+L = Ls(1)
+W = Ws(1)
+aspectRatio = L/W;
+poissonCheck = (Dataset_FA.inputs(:,2)./Dataset_FA.inputs(:,3)).^(1/4);
+poissonPlates = intersect(find( poissonCheck > 0.99*aspectRatio),find( poissonCheck<1.01*aspectRatio));
+length(poissonPlates)
+
+cd(simFolder);
+for jj = 1:length(poissonPlates)
+    if poissonPlates(jj) >=1
+    ii = poissonPlates(jj);
+    meshData = table2array(readtable(['mesh',int2str(ii),'.csv']));
+    modesData = table2array(readtable(['modeshapes',int2str(ii),'.csv']));
+    figure()
+    plot3(meshData(:,1), meshData(:,2), modesData(:,4) ,'.', 'MarkerSize', 5);
+    end
+end
+
+%% 6 ) Analyze Modeshapes
+minimumThreshold = 1e-7;
+% obtain csvPath at section 1
+nSim = 3;
+nModes = 20;
+simFolder = [baseFolder, '\Simulations'];
+modesFilename = 'modesNames.csv';
+
+[modesNames, namesTable] = obtainModesNames(nSim, nModes,minimumThreshold, csvPath,simFolder, modesFilename);
+modesNames = table2array(readtable(modesFilename));
+[appears,maxLoc] = modesOrderAnalysis(nModes, csvPath, modesFilename)
+
+%% 7.1) CORRELATIONS OF INPUTS (check if they actually are gaussian)
+nPars = length(referenceVals);
+Cor = zeros(nPars,nPars);
+for m1 = 1:nPars % Create correlations for each experimenter
+ for m2 = 1:nPars % Correlate against each experimenter
+  Cor(m2,m1) = abs(corr(Dataset_FA.inputs(:,m1),Dataset_FA.inputs(:,m2)));
+ end
+end
+imagesc(Cor)
+colorbar();
+
+%% 7.2) Neural networks
+% var = 0.2;
+% alphaIdxs = intersect(find(Dataset_FA.inputs(:,end-1) < (1+var)*referenceVals(end-1)), find(Dataset_FA.inputs(:,end-1) > (1-var)*referenceVals(end-1)))
+% betaIdxs = intersect(find(Dataset_FA.inputs(:,end) < (1+var)*referenceVals(end)), find(Dataset_FA.inputs(:,end) > (1-var)*referenceVals(end)))
+% 
+% restrictIdx = intersect(alphaIdxs,betaIdxs); 
+
+ nModes = 20;
+[fRegressors,fCoeffs, fR2, fErrors,fpredOutputs] = multilinearRegress(Dataset_FA.inputs,Dataset_FA.outputsEig, nModes, 'freq', referenceVals);
+[aRegressors,aCoeffs, R2, aErrors,aPredOutputs] = multilinearRegress(Dataset_FA.inputs,db(abs(Dataset_FA.outputsAmp)), nModes, 'amp', referenceVals);
+
+nNeurons_frq = 10;
+nLayers_frq = 1;
+
+nNeurons_amp = 15;
+nLayers_amp = 3;
+
+[freq_R2, freq_R2_NN, fNetVector, fNet, fTestIdxs] = ...
+    NN_trainTest_ALL(Dataset_FA.inputs, Dataset_FA.outputsEig, nNeurons_frq, nLayers_frq, 'freq', 25);
+[amp_R2, amp_R2_NN, aNetVector, ampNet, ampTestIdxs] = ...
+    NN_trainTest_ALL(Dataset_FA.inputs, db(abs(Dataset_FA.outputsAmp)), nNeurons_amp, nLayers_amp, 'amp',35);
+
+% % Let's try and see where are outliers
+% figure()
+% toRemove = cell(length(fRegressors),1);
+% % select the modes which are flipping
+% flipping = {'f12' 'f20'};
+% for ii = 1:length(fRegressors)
+%     
+%     subplot(5,5,ii)
+%     plotResiduals(fRegressors{ii});
+%     hold on
+%     maxResidual = max(abs(fRegressors{ii}.Residuals.Raw));
+%     % select low R2 modes 
+%     if ii == 3 || ii == 4       
+%         exact_match_mask = strcmp(modesNames(:,3), flipping{ii-2});
+%         toRemove{ii} = find(exact_match_mask); 
+%     end
+%     legend(['f',int2str(ii)])
+% end
+% 
+% [fRegressors,fCoeffs, R2n, errors, predictedOutputs] = multRgrOutliers(inputsInfo,outputsALLInfo, toRemove, nModes);
+
+%% 8) Minimization of the error 
+% preallocate and set variables
+nRealizations = 5;
+plotData = true;
+NpeaksAxis = 1:8;
+freqMatrix = zeros(nRealizations,length(NpeaksAxis));
+ampMatrix = zeros(nRealizations,length(NpeaksAxis)); 
+parsMatrix = zeros(nRealizations,12);
+gauss = randn(nRealizations,1);
+
+% minimiziation process
+for ii = 1:nRealizations
+    density = rho*(1+0.05*gauss(ii));
+    [xpar, map, f_out, amp_out, fval] = ...
+        minimization_FA(fNet, ampNet, Dataset_FA, f0, fAmps,density, NpeaksAxis, plotData);
+    freqMatrix(ii,:) = f_out(map).'; 
+    ampMatrix(ii,:) = amp_out(map).';
+    parsMatrix(ii,:) = xpar.';
+end
+ 
+
+meanFreq = mean(freqMatrix);
+varFreq = var(freqMatrix);
+
+figure() 
+plot(1:length(f0(NpeaksAxis)), f0(NpeaksAxis), '-o');
+legend('fexp');
+hold on 
+errorbar(1:length(meanFreq),meanFreq,varFreq)
+legend('fexp','fopt');
+xlabel('mode number  N' );
+ylabel('frequency    [Hz]');
+
+
+meanMechParams = mean(parsMatrix);
+matlabStd = std(parsMatrix)./meanMechParams;
+
+stdNames = {'std rho [%]', 'std Ex [%]', 'std Ey [%]', 'std Ez [%]',...
+                    'std Gxy [%]', 'std Gyz [%]', 'std Gxz [%]', 'std vxy [%]', 'std vyz [%]', 'std vxz [%]', 'std alpha[%]', 'std beta[%]'};
+varyingParamsNames = {'rho', 'Ex', 'Ey', 'Ez', 'Gxy', 'Gyz', 'Gxz', 'vxy', 'vyz', 'vxz', 'alpha', 'beta'};   
+
+matlabStdTable = array2table(matlabStd*100, 'VariableNames',stdNames);
+finalOutTable = writeMat2File([meanMechParams; matlabStd*100],'Results.csv', varyingParamsNames, 10,true); 
+    
 %% 7.2) Check quality of the result  (eigenfrequency study with estimated params)
 
  for jj = 1:length(varyingParamsNames)
@@ -330,7 +470,7 @@ cd('C:\Users\utente\.comsol\v56\llmatlab\codesStudy - Parameters - shear\Data4Lo
     [Hv,f0, fLocs, csis, Q] = EMASimple(HvSVD, fAxis,1e-3, 3);
     f0 = f0(2:end); csis = csis(2:end); Q = Q(2:end); fLocs = fLocs(2:end);
     %fAxis = 50:0.5:600;
-    [HvComsol,f0Comsol, maxLocs, csisComsol, QComsol] = EMAPoly(vel, fAxis,1e-10, 1);
+    [HvComsol,f0Comsol, maxLocs, csisComsol, QComsol] = EMAPoly(vel, fAxis,1e-10, 1, false);
     
     Qs = [Q.'; QComsol(1:length(Q)).'];
     Qtable = array2table(Qs, 'variableNames',{'Q1' 'Q2' 'Q3' 'Q4' 'Q5' 'Q6' 'Q7' 'Q8' 'Q9' 'Q10'}, 'rowNames', {'Real' 'Comsol'});

@@ -1,8 +1,8 @@
-% function [outputArg1,outputArg2] = monteCarloMinimization(fun,firstGuess, startStepSize)
+ function [solution] = monteCarloMinimization(fun,firstGuess, startStepSize)
 %MONTECARLOMINIMIZATION Summary of this function goes here
 %   Detailed explanation goes here
-startStepSize = 1000;
-fun = @(xx) ackley(xx);
+% startStepSize = 1000;
+% fun = @(xx) ackley(xx);
 
 algorithmStep = 1;
 fCount = 0;

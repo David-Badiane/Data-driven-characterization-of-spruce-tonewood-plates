@@ -1,5 +1,5 @@
-function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRoutineFreqAmp(model, nSim, nModes, referenceVals,...
-                                   varyingParamsNames,  standardDev,  simFolder, csvPath, writeNow)
+function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRoutineFA_Inputs(model, nSim, nModes, referenceVals,...
+                                   varyingParamsNames,  standardDev,  simFolder, csvPath)
                                
 %COMSOLROUTINEFREQAMP Summary of this function goes here
 %   Detailed explanation goes here
@@ -7,18 +7,9 @@ function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRou
 % - - - - - - - - - - - - - - - - - - - - - - - - - SETUP
     cd(csvPath);
     Dataset_FA = struct('inputs',[] ,'outputsEig',[] ,'outputsAmp',[] );
-    if writeNow
-    else
-        Dataset_FA.inputs = table2array(readtable('inputs.csv'));
-        Dataset_FA.outputsEig = table2array(readtable('outputsEig.csv'));
-        Dataset_FA.outputsAmp = table2array(readtable('outputsAmp.csv'));
-    end
+    Dataset_FA.inputs = table2array(readtable('inputs.csv'));
     
-    if isempty(Dataset_FA.inputs)
-        start = 1;
-    else
-        start = length(Dataset_FA.inputs(:,1))+1;
-    end
+    start = 1;
     
     varNamesModeshapes = cell(nModes+3,1);
     varNamesxyz = {'x' 'y' 'z'};
@@ -31,7 +22,8 @@ function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRou
     end
     
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - START SIMULATION LOOP
-    
+    model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').active(true); % --> activate damping
+
     for ii = start:nSim
         disp(ii)        
         cd(simFolder);
@@ -44,9 +36,7 @@ function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRou
             currentVals = referenceVals;
         else
             % else - generate gaussian sampling of MP
-            gauss = randn(size(referenceVals));
-            currentVals = referenceVals.*(ones(size(referenceVals)) + standardDev.*gauss);
-            disp(referenceVals);
+            currentVals = Dataset_FA.inputs(ii,:);
             disp(currentVals);
             for jj = 1:length(referenceVals)
                 model.param.set(varyingParamsNames(jj), currentVals(jj));
@@ -55,9 +45,8 @@ function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRou
         
         % eigenfrequency study
         model.study('std1').feature('eig').set('neigs', int2str(nModes)); % ---> set number of modes
-        model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').active(false); % --> deactivate damping
+%         model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').active(false); % --> deactivate damping
         model.study('std1').run(); 
-        model.component('comp1').physics('solid').feature('lemm1').feature('dmp1').active(true); % --> activate damping
         
         % save modeshapes
         modesFileName = 'solidDisp';
@@ -72,11 +61,11 @@ function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRou
         cd(csvPath)
         % save eigenfrequencies
         evalFreqz = mpheval(model,'solid.freq','Dataset','dset1','edim',0,'selection',1); % --> evaluate eigenfrequencies
-        eigenFreqz = evalFreqz.d1';
+        eigenFreqz = real(evalFreqz.d1');
         eigenFreqz = eigenFreqz(:).';
         
         % frequency domain
-        model.study('std2').feature('freq').set('plist', num2str(real(eigenFreqz))); % --> set FD studies at eigenfrequencies value
+        model.study('std2').feature('freq').set('plist', num2str(eigenFreqz)); % --> set FD studies at eigenfrequencies value
         model.study('std2').run(); 
 
         % export FD results
@@ -89,12 +78,12 @@ function [Dataset_FA, inputsTable, outputsEigTable, outputsAmpTable] = comsolRou
         vel = vel(4:end);
 
         % Update results
-        Dataset_FA.inputs = [Dataset_FA.inputs; currentVals]
+        %Dataset_FA.inputs = [Dataset_FA.inputs; currentVals]
         Dataset_FA.outputsEig = [Dataset_FA.outputsEig; eigenFreqz]
         Dataset_FA.outputsAmp = [Dataset_FA.outputsAmp; vel]
 
         % Save results
-        inputsTable  = writeMat2File(Dataset_FA.inputs,'inputs.csv', varyingParamsNames(1:12), 10,true);   
+        %inputsTable  = writeMat2File(Dataset_FA.inputs,'inputs.csv', varyingParamsNames(1:12), 10,true);   
         outputsEigTable = writeMat2File(Dataset_FA.outputsEig,'outputsEig.csv', {'f'}, 1,false);  
         outputsAmpTable = writeMat2File(Dataset_FA.outputsAmp,'outputsAmp.csv', {'f'}, 1,false);
     end
