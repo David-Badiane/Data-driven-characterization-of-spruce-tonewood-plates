@@ -1,4 +1,4 @@
-function [predictedOutputs] = predictEigenfrequencies(linearModels , inputsInfo)
+function [predictedOutputs] = predictEigenfrequencies(linearModels , inputsInfo, nModes)
 %PREDICTEIGENFREQUENCIES Summary of this function goes here
 %   With this function we predict all the eigenfrequencies of the system
 
@@ -9,5 +9,7 @@ function [predictedOutputs] = predictEigenfrequencies(linearModels , inputsInfo)
             predictedOutputs(ii,jj) = feval(linearModels{jj},inputsInfo(ii,:));
         end
     end
+    predictedOutputs = predictedOutputs(:,1:nModes);
+
 end
 

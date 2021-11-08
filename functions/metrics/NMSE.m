@@ -4,15 +4,10 @@ function [NMSE] = NMSE(measSig,simSig)
 % simSig  (array) = simulated signal
 % measSig (array) = measured signal
 
-% simSig = simSig/max(simSig);
-% measSig = measSig/max(measSig);
-%NMSE = norm(measSig - simSig, 2)/norm(measSig,2) * 100;
-% NMSE = sum((measSig - simSig)./measSig);
-avgSimSig  = mean(simSig); 
-avgMeasSig = mean(measSig);
-diff = (measSig/avgMeasSig - simSig/avgSimSig);
 
-NMSE = 1/length(measSig) * sum((diff).^2);
+
+NMSE = norm( measSig- simSig)^2/norm(measSig - mean(measSig))^2;
+
 
 % figure(100)
 % subplot(5,5,ii)

@@ -6,8 +6,6 @@
 
 %   OUTPUTS
 %
-
-
     if plotData
      figure()
      semilogy(fAxis, abs(Hv), 'lineWidth', 1.2);

@@ -1,9 +1,9 @@
- function [solution] = monteCarloMinimization(fun,firstGuess, startStepSize)
+function [solution, lastB] = monteCarloMinimization(fun,firstGuess, startStepSize, tolFx)
 %MONTECARLOMINIMIZATION Summary of this function goes here
 %   Detailed explanation goes here
 % startStepSize = 1000;
 % fun = @(xx) ackley(xx);
-
+firstGuess= firstGuess(:);
 algorithmStep = 1;
 fCount = 0;
 iCount = 0;
@@ -12,14 +12,15 @@ iStep = 0;
 nRuns =0;
 n = length(firstGuess);
 exitFlag = false;
+Runs = 1;
+bb = [];
 
-
+disp(['init': num2str(fun(firstGuess))])
 
 while ~exitFlag 
     
     stepSize = zeros(1,21);
 for ii = 1:21
-   % disp(stepSize);
     
     if ii >= 1 && ii <= 4
         stepSize(ii) = startStepSize;
@@ -48,33 +49,39 @@ switch algorithmStep
     case 1
     x = firstGuess;
     delta = rand(size(x));
-    b = x + delta;
+    b = x ;%+ delta;
     fb = 1e6;
     algorithmStep = 2;
     
     % 2) Evaluate f(x)
     case 2
-    fx = feval(fun, x);
+    fx = fun(x);
     algorithmStep = 3;
     
     % 3) Compare f(x) and f(b)
     case 3
     if fx < fb
+        if fb - fx < tolFx
+            solution = mean(bb);
+            lastB = b;
+            exitFlag = true;
+        end
+        
        b = x;
+       bb = [bb; b.']; 
        fb = fx;
        fCount = 0;
        algorithmStep = 5;
+       
     else
-        disp([fx, fb]);
+        disp(['fx:     ', num2str(fx), ' fb:     ' , num2str(fb)]);
         fCount = fCount + 1;
         algorithmStep = 4;
     end
     
     % 4) Check fCount, iStep, iRoc
     case 4
-        disp([fCount, iStep, iRoc]);
-
-        
+        disp(['fCount: ', num2str(fCount),' iStep:  ', num2str(iStep), ' iRoc:   ', num2str(iRoc)]);
         if fCount > 20 && iRoc <3
                 iStep = iStep +1;
                 fCount = 0;
@@ -99,7 +106,7 @@ switch algorithmStep
            % simultaneous change of variables x 
            rx = rand(size(b))*stepSize(fCount+1);
            cx = rand(size(b))*2 - 1;
-           x = b  + rx.*cx
+           x = b  + rx.*cx;
         end
         if iStep > 0 && iRoc <3
            % change only x(iStep)
@@ -117,7 +124,8 @@ switch algorithmStep
     case 7
         if nRuns > Runs
             % b that are in a certain threshold of precision
-            solution = mean(b);
+            solution = mean(bb);
+            lastB = b;
             exitFlag = true;
         else
             nRuns = nRuns +1;

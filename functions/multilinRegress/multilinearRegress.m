@@ -1,78 +1,75 @@
-function [linearModels,multilinCoeffs, R2, errors, predictedOutputs] = multilinearRegress(inputsInfo,outputsALLInfo, nModes,name, referenceVals )
+function [ML] = multilinearRegress( trainSet, testSet, nModes, modesNames, referenceVals)
 %MULTILINEARREGRESS Performs multilinear regression on input and output data
-%   Detailed explanation goes here
+
+% ///////////////////////////////////////////////////////////////////////////////
+%   inputs :
+    % trainSet      = stuct with members
+    % members       = 'inputs', 'outputs'
+    % testSet       = stuct with members
+    % members       = 'inputs', 'outputs'
+    % nModes        = number of modes that we want to regress
+    % modesNames    = names of the modes that we want to regress
+    % referenceVals = nominal values of the inputs
+%   output : 
+%   ML      = struct with members  
+%   members =  'linMdls', 'outs', 'coeffs', multilinCoeffs, 'R2', 'errors'
+
+% //////////////////////////////////////////////////////////////////////////////
+
     
-    outNames = cell(nModes,1);
-    for ii = 1:nModes
-       outNames{ii} = [name,'_{', int2str(ii),'}']; 
-    end
-    
-    nRegressors = length(referenceVals) +1;
+    nRegressors = length(referenceVals) -1;
     linearModels = cell(nModes,1);
     multilinCoeffs = zeros(nRegressors,nModes);
-    R2 = zeros(1,nModes);
-
-    trainIdxs = 1:floor(0.9*length(inputsInfo(:,1)));
-    testIdxs = trainIdxs(end)+1 : length(inputsInfo(:,1));
+    trainSet.outputs =trainSet.outputs(:,1:nModes); 
+    testSet.outputs = testSet.outputs(:,1:nModes);
     
-    for ii = 1:nModes
-        linearModels{ii} = fitlm(inputsInfo(trainIdxs,:), outputsALLInfo(trainIdxs,ii));   
+    outliers = {};
+    nOutliers = [];
+    
+    for ii = 1:nModes  
+        modelfun = @(b,x) b(1) + b(2)*x(:,1)+ b(3)*x(:,2) + b(4)*x(:,3)+ b(5)*x(:,4)+...
+         b(6)*x(:,5)+ b(7)*x(:,6) + b(8)*x(:,7)+ b(9)*x(:,8)+...
+         b(10)*x(:,9)+ b(11)*x(:,10); %+ b(12)*x(:,11)+ b(13)*x(:,12);
+        beta0 = ones(1,11);
+    
+        notNanIdxs = find(~isnan(trainSet.outputs(:,ii)));
+        linearModels{ii} = fitnlm(trainSet.inputs(notNanIdxs,:), trainSet.outputs(notNanIdxs,ii),modelfun,beta0);
+        dists = linearModels{ii}.Diagnostics.CooksDistance;
+        levs = linearModels{ii}.Diagnostics.Leverage;
+        res = linearModels{ii}.Residuals.Standardized;
+        
+        outliers{ii} = unique([find(dists>= 0.1*max(dists)).' find(levs>= 0.9*max(levs)).']);
+        linearModels{ii} = fitnlm(trainSet.inputs(notNanIdxs,1:10), trainSet.outputs(notNanIdxs,ii),modelfun,beta0, 'exclude', outliers{ii});
+        nOutliers(ii) = length(outliers{ii});
+        %linearModels{ii} = fitlm(trainSet.inputs, trainSet.outputs(:,ii),'linear');   
         multilinCoeffs(:,ii) = table2array(linearModels{ii}.Coefficients(:,1));
-        R2(ii) = linearModels{ii}.Rsquared.Adjusted;
-    end
-
-    [predictedOutputs] = predictEigenfrequencies(linearModels , inputsInfo(testIdxs,:));
+        R2_train(ii) = linearModels{ii}.Rsquared.Ordinary;
+     end
+    disp(['newline n outliers: ', num2str(nOutliers)]);
+    outliersIdxs = unique([outliers{:}]);
     
-    normOuts = outputsALLInfo(testIdxs,:)./mean(outputsALLInfo(testIdxs,:));
-    normPredOuts =  predictedOutputs./mean(predictedOutputs);
-     
-    figure()
-    s = scatter(normOuts,normPredOuts,50, '.');
-    xlabel('Actual');
-    ylabel('Predicted');
-    hold on;
-    plot( [min(normPredOuts, [], 'all'), max(normPredOuts, [], 'all')], [min(normPredOuts, [], 'all'), max(normPredOuts, [], 'all')], 'lineWidth', 1.5);
-    legend(outNames{:}, 'y=x line');
-    ax = gca;
-    ax.XMinorTick = 'on';
-    ax.YMinorTick = 'on';
-    ax.TickDir = 'out';
-    ax.FontSize = 20;
-
+    [predictedOutputs] = predictEigenfrequencies(linearModels , testSet.inputs(:,1:10), nModes);
     
-    figure()
-    for ii = 1:length(normPredOuts(1,1:10))
-        if ii == 3 || ii == 4
-        subplot(2,1,ii-2)
-        s = scatter(normOuts(:,ii),normPredOuts(:,ii),50, '.');
-        s.AlphaData = 0.5;
-        xlabel('Actual');
-        ylabel('Predicted');
-        hold on;
-        checkLine = linspace(min(normPredOuts(:,ii)),max(normPredOuts(:,ii)),1000);
-        plot(checkLine , checkLine, 'lineWidth', 1.5);
-        title(outNames{ii});
-        ax = gca;
-        ax.XMinorTick = 'on';
-        ax.YMinorTick = 'on';
-        ax.TickDir = 'out';
-        ax = gca;
-        ax.FontSize = 14;
-
-        end
-        %legend(['f', num2str(ii)], 'y=x line');
-    end
-    
+    [R2] = computeR2(testSet.outputs, predictedOutputs);
     
     errors = zeros(nModes,1);
     for ii = 1:nModes
-       errors(ii) = NMSE(outputsALLInfo(testIdxs,ii), predictedOutputs(:,ii)); 
-    end
-    R2Names = cell(nModes,1);
-    for ii = 1:length(R2Names)
-        R2Names{ii} = [name(1), int2str(ii)];
+       errors(ii) = NMSE(testSet.outputs(:,ii), predictedOutputs(:,ii)); 
     end
     
-    R2 = array2table(round(R2,3), 'VariableNames', R2Names);
+    R2Names = cell(nModes,1);
+    
+    R2 = array2table(R2, 'VariableNames', modesNames);
+    
+    ML = struct('linMdls', [], 'outs' ,[],'predOuts', [], 'coeffs', [], 'R2', [],...
+        'errors', [], 'outliersIdxs', []);
+    ML.linMdls = linearModels; 
+    ML.outs = testSet.outputs;
+    ML.predOuts = predictedOutputs;
+    ML.coeffs = multilinCoeffs;
+    ML.R2 = R2;
+    ML.errors = errors;
+    ML.outliersIdxs = outliersIdxs;
 end
+
 

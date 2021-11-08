@@ -1,4 +1,4 @@
-function [L2, L2_freq] = errorFrequency(mechParams, fNet, f0, rho, NpeaksAxis)
+ function [L2, L2_freq] = errorFrequency(mechParams, fNet, f0, rho, NpeaksAxis)
 %ERRORFA Summary of this function goes here
 %   Detailed explanation goes here
     
