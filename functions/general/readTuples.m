@@ -1,20 +1,18 @@
-function [fileData] = readTuples(filename, nVals, transpose)
-%EXTRACTPASTTUPLES Summary of this function goes here
-%   This function allows to retrieve a nVals*nCols matrix from a file
+function [fileData] = readTuples(filename, rows, transpose)
+%   readTuples 
+%   This function allows to retrieve a nVals*nCols matrix from a txt file
 %   nCols depends from the length of the file, if the matrix
-%   nRows*nVals is desired, apply transposed.
+%   nCols*nVals is desired, apply transposed.
 %   When you call it be sure to be in the same directory where 
 %   the source file is present.
- file = fopen(filename,'rt');
- formatSpec = '%f';
- fileData = cell2mat(textscan(file,formatSpec));
- rows = nVals;
+%   -----------------------------------------------------------------------
+ file = fopen(filename,'rt'); % open file to read text
+ formatSpec = '%f';           % format of the file = floats
+ fileData = cell2mat(textscan(file,formatSpec)); % scan file
+ % retrieve nCols
  cols = round(length(fileData)/rows);
- if isnan(cols) 
-    fileData = zeros(nVals,1);
- else
-    fileData = reshape(fileData,[rows, cols]);
- end
+ fileData = reshape(fileData,[rows, cols]);
+ 
  fclose(file);
  if transpose 
      fileData = fileData';

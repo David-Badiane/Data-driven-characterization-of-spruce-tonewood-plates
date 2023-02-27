@@ -11,8 +11,6 @@ if length(measSig(:,1)) == 1
     measSig = measSig.';
 end
 
-simSig = simSig/max(simSig);
-measSig = measSig/max(measSig);
 NCC  = ( measSig'*simSig)/(norm(simSig,2)*norm(measSig,2));
 end
 
