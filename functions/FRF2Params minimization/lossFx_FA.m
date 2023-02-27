@@ -94,7 +94,7 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
     % C) compute loss function
     % weights to prioritize matching of lower frequency modes
     importantPeaks =ismember(map,[1]);
-    gains = ones(size(map)) + 100*importantPeaks;
+    gains = ones(size(map)) + 0.1*importantPeaks;
     
     % relative errors
     L2_freq_rel = abs( (pointsReal(:,1) - pointsEst(map,1))) ./ pointsReal(:,1);
@@ -102,7 +102,7 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
     
     % Loss function
     % minimize only on frequency if alpha and beta are fixed
-    L2 = gains.*sum(L2_freq_rel); 
+    L2 = sum(gains(:).*L2_freq_rel(:)); 
     % minimizing also amplitude allows to estimate alpha and beta
     % L2 = gains.*sum(L2_freq_rel +L2_amp_rel); 
     

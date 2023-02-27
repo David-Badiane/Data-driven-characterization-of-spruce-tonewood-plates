@@ -126,7 +126,7 @@ f0s = {};
 
 % plate 1: delete spurious f0 1 time in the pit
 % plate 2: delete initial spurious and 6 peak (has too low amplitude, better off without)
-% plate 3: all good
+% plate 3: double peak
 % plate 4: all good
 % plate 5: delete 4th peak, it's spurious
 % plate 6: delete 4th peak, and error in the pit
@@ -136,6 +136,7 @@ f0s = {};
 % plate 10: avoid triple peak, pit and double
 for plateN = 1:length(H1_matrix(1,:))
     % find peaks
+    disp([newline, 'PLATE ' num2str(plateN)])
     [fVals, fLocs] = findpeaks(abs(H1_matrix(:,plateN)),...
                      'minPeakProminence',minPkVal(plateN),...
                      'minPeakWidth', minPkWidths(plateN));
