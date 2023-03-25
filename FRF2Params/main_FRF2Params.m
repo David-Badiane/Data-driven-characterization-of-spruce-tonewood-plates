@@ -31,7 +31,7 @@ end
 
 % directories names
 baseFolder = pwd;                                          % base working directory is current directory 
-datasetDir = 'csv_gPlates';                                % directory of the dataset
+datasetDir = 'csv_gPlates_';                                % directory of the dataset
 datasetPath = [baseFolder, '\', datasetDir];               % path of the dataset directory
 idxs   = strfind(baseFolder,'\');                          % find the fxs path, it is in the directory containing the baseFolder
 resultsPath = [datasetPath,'\Results'];                    % path of the results directory
@@ -138,13 +138,13 @@ end
 % ------------ a) set flags -----------------------------------------------
 getNNs = true;             % fetch neural networks from files
 % plotdata = show freq-amp space [end, during, before] minimization
-plotData = [1, 0, 0]; 
+plotData = [1, 1, 1]; 
 see_loss_fx_evolution = 0; % true if you want to see the evolution of the loss fx
 saveResults = 1;
 
 % ------------ b) set constants and variables -----------------------------
 nRealizations = 10;                                                    % n° realizations considered to average the result
-plateNumbers =  1;                                                   % plate numbers in a array
+plateNumbers =  5:10;                                                   % plate numbers in a array
 nPeaks = 12;                                                           % n° peaks considered during minimization
 considered_peaks_axis = 1:nPeaks;                                      % axis with considered FRF peaks
 alphas =  [0 0  0  0  0.1     0  0  0.1  0  0];       % starting values for alpha
@@ -153,12 +153,12 @@ betas   = [01e-6   0.3e-6   0.4e-6    0.7e-6   0.2e-6...
            0.6e-6   0.5e-6   0.8e-6    1.4e-6     1.6e-6]; % starting values for beta
 
 input_parameters_start = dataset_centerVals;
-sampleSize = 200;% first guess are the center values of the dataset
+sampleSize = 1000;% first guess are the center values of the dataset
 
 % ------------ c) set parameters to exit the minimization algorithm ------- 
 % N.B. both tolFun and tolX must be satisfied to satisfy convergence criteria
-tolFun      = 1e-4;     % minimum loss function variation per step
-tolX        = 4e6;      % minimum variation of any input per step
+tolFun      = 1e-6;     % minimum loss function variation per step
+tolX        = 1e6;      % minimum variation of any input per step
 maxFunEvals = 1e3;      % max n° evaluations of the loss function
 maxIter     = 1.5e3;    % max n° iterations
 if see_loss_fx_evolution 
@@ -215,9 +215,9 @@ for plateN = plateNumbers % for each plate
     damping = [alphas(plateN), betas(plateN)];       % damping
     
     % set first guess for mech params
-    input_parameters_start = get_first_guess_from_dataset(Dataset_FA,...
-         f0, fAmps, fNet, aNet, density, geometry, damping, sampleSize, dataset_centerVals);
-%     input_parameters_start = [density dataset_centerVals(2:10) damping geometry];
+%     input_parameters_start = get_first_guess_from_dataset(Dataset_FA,...
+%          f0, fAmps, fNet, aNet, density, geometry, damping, sampleSize, dataset_centerVals);
+    input_parameters_start = [density dataset_centerVals(2:10) damping geometry];
                                             
     % values of constant params
     constant_params_values = input_parameters_start(fixParamsIdxs);

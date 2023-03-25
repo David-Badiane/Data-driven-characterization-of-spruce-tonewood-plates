@@ -12,7 +12,7 @@
 % section 1)   Modeshapes Resampling
 % section 2)   Compute reference set
 % section 3)   Reference set resampling
-% section 4)   Modeshapes Labeling
+% section 4)   Modeshapes Labeling --> NCC
 % section 4.1) Code to modify the reference set
 % section 5)   Postprocessing and outliers removal
 % section 5.1) Remove poisson plates
