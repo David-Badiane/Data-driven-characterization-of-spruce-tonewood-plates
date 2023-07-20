@@ -356,7 +356,7 @@ aspectRatio =Dataset_FA.inputs(nonOutliers,13)./Dataset_FA.inputs(nonOutliers,14
 delta =1; % percentage of the span in which we look for poisson plates with poissonCheck
 plotPlates = 1;
 deletePlates = 0;
-
+% do the search 
 poissonCheck = (Dataset_FA.inputs(nonOutliers,2)./Dataset_FA.inputs(nonOutliers,3)).^(1/4);
 poissonPlates = find( poissonCheck >= .01*(100-delta)*aspectRatio & poissonCheck<=.01*(100+delta)*aspectRatio);
 disp(' ');
