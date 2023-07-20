@@ -34,7 +34,7 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
     aReal = aReal(:); fReal = fReal(:);
     
     % A) normalization
-    K = 4;
+    K = 3;
     gamma = mean(abs(aReal(1:K))./abs(aEst(1:K))); % for db - comsol and real amps to the same order of magnitude      
     aEst_norm  = db(aEst*gamma);     
     aReal_norm = db(aReal);
@@ -50,7 +50,7 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
     for kk = 1:length(NpeaksAxis) % for each real point
         % 1) compute the distance in frequency and amplitude for each point
         % multiply for eta to give same importance to frequency and amp in computation of the distance              
-        ampsDiff = abs(eta*(pointsReal(kk,2) - pointsEst(:,2)));  
+        ampsDiff = abs(.75*eta*(pointsReal(kk,2) - pointsEst(:,2)));  
         fDiff =  abs((pointsReal(kk,1) - pointsEst(:,1)));        
         
         % 2) compute euclidean distances
@@ -65,6 +65,7 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
         % 5) plot figure
         if plotData
             if kk == 1
+%                 map(1) = 1;
                 figure(figN-1);
                 clf reset;
                 hold on;
@@ -93,8 +94,8 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
     
     % C) compute loss function
     % weights to prioritize matching of lower frequency modes
-    importantPeaks =ismember(map,[1]);
-    gains = ones(size(map)) + 0.1*importantPeaks;
+    importantPeaks =ismember(map,[1 2 3 4 5]);
+    gains = ones(size(map)) + 100*importantPeaks;
     
     % relative errors
     L2_freq_rel = abs( (pointsReal(:,1) - pointsEst(map,1))) ./ pointsReal(:,1);
@@ -102,13 +103,13 @@ function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
     
     % Loss function
     % minimize only on frequency if alpha and beta are fixed
-    L2 = sum(gains(:).*L2_freq_rel(:)); 
+%     L2 = sum(gains(:).*L2_freq_rel(:)); 
     % minimizing also amplitude allows to estimate alpha and beta
-    % L2 = gains.*sum(L2_freq_rel +L2_amp_rel); 
+    L2 = sum(gains(:).*(L2_freq_rel)); 
     
     % penalty function to avoid that the same estimation of NN is
     % associated to two or more FRF peaks
     if length(unique(map)) ~= length(map)
-        L2 = (abs(length(unique(map))-length(map)))^2 + L2; 
+        L2 = (abs(length(unique(map))-length(map)))^2 * L2; 
     end  
 end

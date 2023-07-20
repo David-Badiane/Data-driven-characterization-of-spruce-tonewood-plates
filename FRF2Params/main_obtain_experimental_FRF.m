@@ -197,3 +197,89 @@ if saveData
     cd(baseFolder);
     save('measFRFs', 'measFRFs');
 end
+
+
+%% read  from Raffaele's new measurements
+measuredSamples = {'AL' 'AR' 'BL' 'BR' 'CL' 'CR'}; % plates labels
+nPlates = length(measuredSamples); % number of measurement points in the violin plate
+fHigh = 2000;     % high bound of the frequency axis
+fLow = 20;
+
+fMin =20;
+fMax = 2000;
+minPkWidths = [4      4    2.5   2.55     2.1   2.5  ];
+minPkVal    = [1e-4 0.35e-3 .75e-3 .75e-3  .4e-3 0.3e-3];
+
+% booleans
+removePeaks = 0;   % flag to remove some misidentified peaks
+saveData = 0;      % flag to save data
+saveFilename = 'measFRFs_ABC';
+
+% preallocation
+H1_matrix = [];
+fAmps = {};
+f0s = {};
+
+cd(measuresPath)
+
+for plateN = 1:nPlates
+    fileName = ['17_03_23_frf2params_' measuredSamples{plateN} '_frf.mat'];
+    load(fileName)
+
+    fMask = f>=fMin & f<=fMax;
+    f = f(fMask);
+    H1_svd = SVD(H1_v, f, 3, 1, measuredSamples, plateN);
+    f = f(fMask);
+    H1_v = H1_v(fMask);
+    H1_matrix = [H1_matrix; H1_v(:).'];
+    % find peaks
+    [fVals, fLocs] = findpeaks(abs(H1_svd),...
+                     'minPeakProminence',minPkVal(plateN),...
+                     'minPeakWidth', minPkWidths(plateN));
+    % save peaks             
+    f0 = f(fLocs);
+    fAmp = abs(H1_v(fLocs));
+    fAmp = fAmp(f0>fMin & f0<fMax);
+    f0 = f0(f0>fMin & f0<fMax);
+    
+    % plot figure
+    figure(plateN); clf reset;
+    set(gcf, 'Position',  [0, 400, 1500, 200]);
+    plot(f0, db(fAmp), 'o', 'markerSize', 5, 'LineWidth', 1.4); hold on ;
+    p = plot(f, db(abs(H1_v)) );
+    title(measuredSamples{plateN});
+    
+    % save peaks into matrices
+    f0s = {f0s{:}, f0(:).'};
+    fAmps = {fAmps{:}, fAmp(:).'};
+
+    % remove misidentified peaks
+    if removePeaks
+        removing = input('how much frequency regions to remove: ');
+        for ii = 1:removing
+            disp('select low bound of frequency region to delete')
+            [fL,y] = ginput(1);
+            disp('select high bound of frequency region to delete')
+            [fH,y] = ginput(1);
+            idxs = find(f0 >= fL & f0 <= fH);
+            f0(idxs) = []; fAmp(idxs) = [];
+            figure(plateN); clf reset;
+            set(gcf, 'Position',  [0, 400, 1500, 200]);
+            plot(f0, db(fAmp), 'o', 'markerSize', 5, 'LineWidth', 1.4); hold on ;
+            p = plot(f, db(abs(H1_v)));
+        end
+    end
+end
+
+% create a struct with 
+measFRFs = struct('FRFs', [], 'fAx', [], 'f0s', [], 'fAmps', [], 'pts', []);
+measFRFs.FRFs  = H1_matrix(:,f>= fMin & f <=fMax);  % FRFs signals (n_freq_bins x nPlates) array
+measFRFs.fAx   = f(f>= fMin & f <=fMax);   % fAxis        (n_freq_bins x nPlates) array
+measFRFs.f0s   = f0s;     % cell array 
+measFRFs.fAmps = fAmps;   % cell array
+measFRFs.samples   =  measuredSamples;
+
+if saveData 
+    cd(baseFolder);
+    save(saveFilename, 'measFRFs_AB.mat');
+end

@@ -34,8 +34,8 @@ function img = export_matrixix(matrix,imgData, roundN, plotPercentage)
     % if plotPercentage - update M with the relative values over the row sum
     if plotPercentage
         for ii = 1:length(M(:,1))
-            sumRow = sum(M(ii,:));
-            M(ii,:) = M(ii,:)./sumRow;
+            sumRow = sum(abs(M(ii,:)));
+            M(ii,:) = abs(M(ii,:))./sumRow;
         end
     end
     

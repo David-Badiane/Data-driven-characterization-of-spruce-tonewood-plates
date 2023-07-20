@@ -25,6 +25,7 @@
 % to remove all previous paths
 remPath = false; % flag to remove paths, set to true if you want to remove all paths
 if remPath
+ clear all
  cd(baseFolder)
  rmpath(genpath(baseFolder));
 end
@@ -131,36 +132,61 @@ if livelink
                                        datasetPath, writeNow, 'gaussian')      
 end
 
+%% material properties reference
+% Walnut
+Ew = [9.8e9];
+%                   %EL,     R ,     T       GLR,    GRT , GLT,      vLR,   vRT,   vLT 
+walnutCenterVals = [Ew    .106*Ew .056*Ew  .085*Ew  .021*Ew .059*Ew .495   .718   .632];
+
+% Mahogany
+Ew = [7.9e9];
+%                     %EL,     R ,     T       GLR,    GRT ,  GLT,      vLR,   vRT,   vLT 
+mahoganyCenterVals = [Ew    .111*Ew .05*Ew  .088*Ew  .021*Ew .59*Ew    .297   .604   .641];
+
+% Maple
+Ew = [9.6e9];
+%                   %EL,     R ,     T       GLR,    GRT , GLT,      vLR,   vRT,   vLT 
+mapleCenterVals = [Ew    .140*Ew .067*Ew  .133*Ew  .021*Ew .074*Ew  .434   .762   .509];
+
+% put all together with geometry and density
+abc_data= readmatrix('density_ABC.xlsx');
+abc_data = [0.001*abc_data(:,2:end-1), abc_data(:,end)];
+firstguess_parameters = [abc_data(1:2,end) [1,1]'*[mapleCenterVals 0 0] abc_data(1:2,1:end-1);... 
+                        abc_data(3:4,end) [1,1]'*[mahoganyCenterVals 0 0] abc_data(3:4,1:end-1);...
+                        abc_data(5:6,end) [1,1]'*[walnutCenterVals 0 0] abc_data(5:6,1:end-1)];
 
 %% section 3) FRF2Params - Material properties estimation
 % =========================================================================
 % ============================= PRESET ====================================
+measuredSamples = {'AL' 'AR' 'BL' 'BR' 'CL' 'CR'};
+
 % ------------ a) set flags -----------------------------------------------
 getNNs = true;             % fetch neural networks from files
 % plotdata = show freq-amp space [end, during, before] minimization
-plotData = [1, 1, 1]; 
+plotData = [1, 0, 1]; 
 see_loss_fx_evolution = 0; % true if you want to see the evolution of the loss fx
 saveResults = 1;
-
 % ------------ b) set constants and variables -----------------------------
-nRealizations = 10;                                                    % n° realizations considered to average the result
-plateNumbers =  5:10;                                                   % plate numbers in a array
-nPeaks = 12;                                                           % n° peaks considered during minimization
+nRealizations = 9;                                                    % n° realizations considered to average the result
+plateNumbers =  5:6;                                                   % plate numbers in a array
+nPeaks = 10;                                                           % n° peaks considered during minimization
 considered_peaks_axis = 1:nPeaks;                                      % axis with considered FRF peaks
-alphas =  [0 0  0  0  0.1     0  0  0.1  0  0];       % starting values for alpha
 
-betas   = [01e-6   0.3e-6   0.4e-6    0.7e-6   0.2e-6...
-           0.6e-6   0.5e-6   0.8e-6    1.4e-6     1.6e-6]; % starting values for beta
+alphas = [10      10     6.5    10     10    10      10   10   10 10];       % starting values for alpha
+betas   = [.5e-6 .1e-6 1.5e-6 1e-6 1e-6 5e-6 4.25e-6 7e-6 6e-6 4e-6 4e-6]; % starting values for beta
 
-input_parameters_start = dataset_centerVals;
-sampleSize = 1000;% first guess are the center values of the dataset
+input_parameters_start = firstguess_parameters(1,:);
+sampleSize = 200;% first guess are the center values of the dataset
+geoms_Rhos= readmatrix('density_ABC.xlsx');
+geoms = .001*geoms_Rhos(:,2:4);
+rhos = geoms_Rhos(:,5);
 
 % ------------ c) set parameters to exit the minimization algorithm ------- 
 % N.B. both tolFun and tolX must be satisfied to satisfy convergence criteria
 tolFun      = 1e-6;     % minimum loss function variation per step
-tolX        = 1e6;      % minimum variation of any input per step
-maxFunEvals = 1e3;      % max n° evaluations of the loss function
-maxIter     = 1.5e3;    % max n° iterations
+tolX        = 1e4;      % minimum variation of any input per step
+maxFunEvals = 2e4;      % max n° evaluations of the loss function
+maxIter     = 1e4;    % max n° iterations
 if see_loss_fx_evolution 
  options = optimset(optimset('fminsearch'), 'TolFun', tolFun,'TolX',tolX,...
                     'MaxFunEvals', maxFunEvals,'MaxIter', maxIter, 'PlotFcns',@optimplotfval); 
@@ -181,10 +207,16 @@ end
 %  ------------ e) set which parameters are not updated during minimization 
 % name    rho, E_L, E_R, E_T, G_LR, G_RT, G_LT, v_LR, v_RT, v_LT, alpha, beta, L,  W,   T
 % index    1    2    3    4    5     6     7     8     9     10    11     12   13  14   15
-fixParamsIdxs = [1,11,12,13,14,15]; % density, damping, geometry
+fixParamsIdxs = [1,4,6,7,9,10,13,14,15]; % density, damping, geometry
 
 % ============================= FRF2Params ================================
-for plateN = plateNumbers % for each plate
+for plateN = plateNumbers(1:end) % for each plate
+    if plotData(1)
+        figure(188)
+        clf reset
+        plot(measFRFs.fAx, db(abs(measFRFs.FRFs(plateN,:))))
+        xlim([measFRFs.fAx(1), measFRFs.f0s{plateN}(nPeaks)])
+    end
     disp([newline, 'SAMPLE ' measuredSamples{plateN}, newline])
     
     % A) ---------------------- SET VARIABLES -----------------------------
@@ -210,21 +242,23 @@ for plateN = plateNumbers % for each plate
     fAx  = measFRFs.fAx;
     
     % set first guess for density, geometry, damping
-    density = firstguess_parameters(plateN,1);           % density
-    geometry = firstguess_parameters(plateN,13:end); % geometry
-    damping = [alphas(plateN), betas(plateN)];       % damping
-    
-    % set first guess for mech params
-%     input_parameters_start = get_first_guess_from_dataset(Dataset_FA,...
-%          f0, fAmps, fNet, aNet, density, geometry, damping, sampleSize, dataset_centerVals);
-    input_parameters_start = [density dataset_centerVals(2:10) damping geometry];
-                                            
+    input_parameters_start = firstguess_parameters(plateN,:);           % density
+%         m = 2.25; 
+        input_parameters_start([2,3,5]) = m*input_parameters_start([2,3,5]); 
+%     input_parameters_start(15) = 0.005;
+    % put alpha and beta values
+    input_parameters_start(11:12) = [alphas(plateN), betas(plateN)];       % damping
+%     input_parameters_start(15) = 0.004                          
     % values of constant params
     constant_params_values = input_parameters_start(fixParamsIdxs);
     % show values of constant params
     disp(['constant params names : ',newline, string(inputParamsNames(fixParamsIdxs))])
     disp(['constant params values : ' num2str(input_parameters_start(fixParamsIdxs),2)]);
-    rho = input_parameters_start(1);
+
+    optParamsIdxs = setdiff(1:15, fixParamsIdxs);
+    disp(['optimized params names : ',newline, string(inputParamsNames(optParamsIdxs))])
+    disp(['optimized params values : ' num2str(input_parameters_start(optParamsIdxs),2)]);
+    rho = rhos(plateN);
     
     % B) ------------------------- MINIMIZATIONS --------------------------
     for ii = 1:nRealizations
@@ -355,8 +389,8 @@ nRealizations = 10;
 res = [];
 resNames = {};
 alphas = 5*ones(10,1);
-betas = 2e-6*ones(10,1);
-plateNumbers = 1:10;
+betas = 4e-6*ones(10,1);
+plateNumbers = 1:6;
 
 % image setting variables
 xLengthImg = 700; 
@@ -411,5 +445,26 @@ for plateN = plateNumbers
     nmses(plateN)= nmse;
     temp = temp+1;
     pause(1e-4);
-    close all
+%     close all
 end
+%% store results into a single file 
+
+
+nPlates = 1:6;
+resultsMat = [];
+nRealizations = 9;
+nPeaks = 10;
+measuredSamples = {'AL' 'AR' 'BL' 'BR' 'CL' 'CR'};
+cd(resultsPath)
+for plateN = nPlates
+    resultsFilename = ['Results_', measuredSamples{plateN}, ...
+                       '_nR', int2str(nRealizations),'_',int2str(nPeaks)];
+    res = readmatrix([resultsFilename '.csv']);
+    resultsMat = [resultsMat; res(1,:)];
+end
+
+varyingParamsNames = {'rho', 'Ex', 'Ey', 'Ez', 'Gxy', 'Gyz', 'Gxz', 'vxy', 'vyz', 'vxz', 'alpha', 'beta', 'L' 'W' 'H'};
+
+resultsTable = array2table(str2num(num2str(resultsMat,3)), 'variableNames', varyingParamsNames, 'rowNames', measuredSamples);
+cd(baseFolder)
+writetable(resultsTable, 'results_ABC.csv');
