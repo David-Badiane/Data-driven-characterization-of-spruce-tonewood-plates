@@ -5,26 +5,26 @@ function [L2, mode_matching_map] = errorFA(mechParams, fNet, aNet, f0, fAmps,...
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs: 
-% mechParams    = array with mech params to be optimized (usually less than 15)
-% fNet          = neural network object - neural network predicting eigenfrequencies
-% aNet          = neural network object - neural network predicting amplitudes
-% f0            = nPts x 1 cell - in each cell we have the frequencies of
+%   mechParams    = array with mech params to be optimized (usually less than 15)
+%   fNet          = neural network object - neural network predicting eigenfrequencies
+%   aNet          = neural network object - neural network predicting amplitudes
+%   f0            = nPts x 1 cell - in each cell we have the frequencies of
 %                 the peaks of a single FRF
-% fAmps         = nPts x 1 cell - in each cell we have the amplitudes of
+%   fAmps         = nPts x 1 cell - in each cell we have the amplitudes of
 %                 the peaks of a single FRF
-% rho           = 1x1 double - density of the plate
-% NpeaksAxis    = nPeaks x 1 double - axis with the FRF peaks considered 
+%   rho           = 1x1 double - density of the plate
+%   NpeaksAxis    = nPeaks x 1 double - axis with the FRF peaks considered 
 %                                  in the minimization
-% plotData      = boolean to decide whether to plot or not
-% fixParamsVals = values for the material properties that are not optimized,
+%   plotData      = boolean to decide whether to plot or not
+%   fixParamsVals = values for the material properties that are not optimized,
 %                 (at least density and geometry)
-% fixParamsIdxs = indexes of the fixed params in the mechParams array
-% nPts          = 1x1 double - number of point FRFs considered 
-% figN          = 1x1 double - figure number 
+%   fixParamsIdxs = indexes of the fixed params in the mechParams array
+%   nPts          = 1x1 double - number of point FRFs considered 
+%   figN          = 1x1 double - figure number 
 % -------------------------------------------------------------------------
 % outputs: 
-% L2            = 1x1 double - loss function value
-% mode_matching_map          = mode matching btw FRF peaks - NNs eigenfrequencies
+%   L2            = 1x1 double - loss function value
+%   mode_matching_map          = mode matching btw FRF peaks - NNs eigenfrequencies
 % -------------------------------------------------------------------------
     % set nargin cases
     if nargin<12, nFRFs = 1; end

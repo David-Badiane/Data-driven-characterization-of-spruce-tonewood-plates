@@ -1,15 +1,17 @@
 function [R2] = computeR2(observedData,predictedData)
-% computeR2 
+% COMPUTER2 
+% -------------------------------------------------------------------------
 % this function allows to compute the coefficient (R2) of determination between
 % observed data and predicted data. 
-% In short, the R2 says us how much of the standard deviation of the
-% observed data is represented in the predicted data, yielding a metric to
+% -------------------------------------------------------------------------
+% The R2 says us how much of the standard deviation of the observed 
+% data is represented in the predicted data, yielding a metric to
 % measure the accuracy of the predicting model.
 % -------------------------------------------------------------------------
-% observedData  = nTuples x nCols double - array with observed data
-% predictedData = nTuples x nCols double - array with data predicted by a regressor/predictor
+%   observedData  = nTuples x nCols double - array with observed data
+%   predictedData = nTuples x nCols double - array with data predicted by a regressor/predictor
 % -------------------------------------------------------------------------
-% R2 = 1xnCols double - coefficient of determination
+%   R2 = 1xnCols double - coefficient of determination
 % -------------------------------------------------------------------------
 nCols = length(observedData(1,:)); % number of columns of the data
 R2 = []; % preallocate R2

@@ -6,14 +6,14 @@ function [] = modeshapes_resampling(pX,pY,nCols, nTuples,...
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs:
-% pX               = int - number of points along the x axis of the
+%   pX               = int - number of points along the x axis of the
 %                          rectangular grid
-% pY               = int - number of points along the y axis of the
+%   pY               = int - number of points along the y axis of the
 %                          rectangular grid
-% nCols            = int - number of dataset columns taken into account (how many eigenfrequencies)
-% nTuples          = int - number of dataset tuples
-% resampledFolder  = string - path where to save resampled modeshapes
-% plotData         = boolean - select wheter to plot figures while
+%   nCols            = int - number of dataset columns taken into account (how many eigenfrequencies)
+%   nTuples          = int - number of dataset tuples
+%   resampledFolder  = string - path where to save resampled modeshapes
+%   plotData         = boolean - select wheter to plot figures while
 %                              resampling (slower)
 % -------------------------------------------------------------------------
 % outputs:

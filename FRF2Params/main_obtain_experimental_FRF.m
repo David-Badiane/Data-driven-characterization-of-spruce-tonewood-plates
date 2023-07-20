@@ -17,10 +17,10 @@
 clear = 0; close = 0;
 if clear, clear all; end
 if close, close all; end
-
 clc
+
 baseFolder = pwd;
-measuresPath = [baseFolder, '\data']; 
+measuresPath = [baseFolder, '\FRF_data']; 
 addpath(genpath(measuresPath));
 idxs   = strfind(baseFolder,'\');
 addpath(genpath([baseFolder(1:idxs(end)), 'functions']));

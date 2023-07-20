@@ -45,7 +45,7 @@ mkdir(NNPath);
 
 % add all paths 
 addpath(genpath([baseFolder(1:idxs(end)), 'functions']));
-addpath([baseFolder, '\FRF_data']);
+addpath([baseFolder, '\data']);
 addpath(datasetPath);
 addpath(geom_mass_path);
 addpath(NNPath);
@@ -141,18 +141,18 @@ getOrderedDataset = false;  % True to get NNs ordered by modes, false by peaks
 plotData = [1, 1, 1]; 
 see_loss_fx_evolution = 0; % true if you want to see the evolution of the loss fx
 saveResults = 1;
-use_refvals_as_first_guess = true;
+
 % ------------ b) set constants and variables of FRF2PARAMS -----------------------------
 nRealizations = 10;                                                    % n° realizations considered to average the result
-plateNumbers =  10;                                                  % plate numbers in a array
+plateNumbers =  9:10;                                                  % plate numbers in a array
 nPeaks = 12;                                                           % n° peaks considered during minimization
 considered_peaks_axis = 1:nPeaks;                                      % axis with considered FRF peaks
-alphas =  [5, 5, 5, 5, 4, ...
-           2.5, 2.5, 5, 0, 0]*1e-1;       % starting values for alpha
+alphas =  [0 0  0  0  0.1     0  0  0.1  0  0];       % starting values for alpha
 
-betas   = [8, 3, 2, 3,   5, ...
-           5, 5, 8, 4, 6]*1e-7; % starting values for beta
+betas   = [01e-6   0.3e-6   0.4e-6    0.7e-6   0.2e-6...
+           0.6e-6   0.5e-6   0.8e-6    1.4e-6     1.6e-6]; % starting values for beta
 
+input_parameters_start = dataset_centerVals;
 sampleSize = 1000;% first guess are the center values of the dataset
 
 % ------------ c) set parameters to exit the minimization algorithm ------- 
@@ -218,11 +218,8 @@ for plateN = plateNumbers % for each plate
     % set first guess for mech params
 %     input_parameters_start = get_first_guess_from_dataset(Dataset_FA,...
 %          f0, fAmps, fNet, aNet, density, geometry, damping, sampleSize, dataset_centerVals);
-    if use_refvals_as_first_guess
-        input_parameters_start = [density firstguess_parameters(plateN,2:10) damping geometry];
-    else
-        input_parameters_start = [density dataset_centerVals(2:10) damping geometry];
-    end                               
+    input_parameters_start = [density dataset_centerVals(2:10) damping geometry];
+                                            
     % values of constant params
     constant_params_values = input_parameters_start(fixParamsIdxs);
     % show values of constant params
@@ -312,7 +309,7 @@ disp(['relative error frequencies: ', newline, num2str(relErr)]);
 %% section 5) simulate point FRF  to validate results (frequency domain with estimated parameters)
 % =========================================================================
 % flags 
-fetchModel = 1; % --> to fetch the comsol model right here
+fetchModel = ; % --> to fetch the comsol model right here
 
 % variables - some are repeated from (section 0) to opportunistically validate results
 datasetDir = 'csv_gPlates_'; 
@@ -323,13 +320,13 @@ fBounds = [fLow, fHigh];
 
 fAx  = measFRFs.fAx;
 nPointsAxis = 600; 
-plateNumbers = 1:10;
+plateNumbers = 1;
 nRealizations = 10;
 nPeaks = [12 12 12 12 12 12 12 12 12 12];
 
 % to set alpha and beta (damping) in the simulation
-alphas_simulation = [8.0 8.0 6.0 6.0 6.0 6.0 6.0 8.0 6.0 6.0];
-betas_simulation  = [2.0 2.0 2.0 2.0 2.0 2.3 2.0 2.0 2.0 2.0]*1e-6;
+alphas_simulation = [8.0 8.0 6.0 1 6.0 6.0 6.0 8.0 6.0 6.0];
+betas_simulation  = [2.0 2.0 2.0 0.4  2.0 2.3 2.0 2.0 2.0 2.0]*1e-6;
 alphaBetaIdxs     = [11,12];
 
 % Comsol routine

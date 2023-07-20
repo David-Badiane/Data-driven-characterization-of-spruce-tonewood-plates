@@ -3,19 +3,19 @@ function [Dataset_FA, csvPath, HyperParameters_path] =...
 % this function fetches the dataset with the number of columns specified by modesGet,
 % if the fetched data is ordered by modes we will have a dataset with the
 % frequency and amplitude of each mode
-% copyrigth: David Giuseppe Badiane
+% made by: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs: 
-% baseFolder   = string  - directory of the basic folder - ex. FRF2Params/gPlates
-% modesGet     = 1x1 int - set how many modes are retrieved in the dataset
-% getOrdered   = boolean - if true get the dataset ordered by modes (reduced)
+%   baseFolder   = string  - directory of the basic folder - ex. FRF2Params/gPlates
+%   modesGet     = 1x1 int - set how many modes are retrieved in the dataset
+%   getOrdered   = boolean - if true get the dataset ordered by modes (reduced)
 %                          otherwise, get raw dataset
-% csvName      = string  - name of the directory containing the dataset
+%   csvName      = string  - name of the directory containing the dataset
 % -------------------------------------------------------------------------
 % outputs:
-% Dataset_FA   = struct - contains the dataset 
-% datasetPath  = string - complete path to dataset directory
-% HPFolder     = string - complete path to hyperparameters tuning folder
+%   Dataset_FA   = struct - contains the dataset 
+%   datasetPath  = string - complete path to dataset directory
+%   HPFolder     = string - complete path to hyperparameters tuning folder
 % -------------------------------------------------------------------------
     % set number of inputs behaviour
      if nargin<3, getOrdered = false; end

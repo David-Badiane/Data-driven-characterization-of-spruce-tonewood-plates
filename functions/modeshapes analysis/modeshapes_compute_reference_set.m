@@ -6,14 +6,14 @@ function [refFilename] = modeshapes_compute_reference_set(model, nModesRef, ...
     % input parameter - (material, damping, geometry)
     % ---------------------------------------------------------------------
     % inputs:
-    % model                       = comsol model of gPlate.comsol
-    % nModesRef                   = int - number of modes to compute
-    % csvPath                     = string - path of the dataset directory
-    % reference_parameters        = double array - input parameters values
-    % reference_parameters_names  = cell array   - input parameters names
+    %   model                       = comsol model of gPlate.comsol
+    %   nModesRef                   = int - number of modes to compute
+    %   csvPath                     = string - path of the dataset directory
+    %   reference_parameters        = double array - input parameters values
+    %   reference_parameters_names  = cell array   - input parameters names
     % ---------------------------------------------------------------------
     % outputs:
-    % refFilename = string - filename of a file with the generated reference
+    %   refFilename = string - filename of a file with the generated reference
     %                        modeshapes
     % ---------------------------------------------------------------------
     

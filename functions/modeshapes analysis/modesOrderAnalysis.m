@@ -6,18 +6,17 @@ function [appears,maxLoc] = modesOrderAnalysis(nModes, csvPath, modesFilename, n
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs: 
-% nModes = int - number of modes taken into account;
-% csvPath = string - path of the dataset directory
-% modesFilename = string - fileName of the modeshapes file
-% nonOutliers   = boolean array - says us which tuples of the raw dataset
+%   nModes = int - number of modes taken into account;
+%   csvPath = string - path of the dataset directory
+%   modesFilename = string - fileName of the modeshapes file
+%   nonOutliers   = boolean array - says us which tuples of the raw dataset
 %                 are not outliers (repeated labels - NCC<0.9 - Poisson plates)
 % -------------------------------------------------------------------------
 % outputs:   
-% appears = int array - map saying us how much times a given mode appears
+%   appears = int array - map saying us how much times a given mode appears
 %                       on a given dataset column (i.e. how much f11 is the 1st peak or 2nd peak)
-% maxLoc  = int - the index of the modes Ordering most frequent in the dataset 
+%   maxLoc  = int - the index of the modes Ordering most frequent in the dataset 
 % -------------------------------------------------------------------------
-%   Detailed explanation goes here
     cd(csvPath);
     modesNames = table2cell(readtable(modesFilename));
     modesNames = modesNames(nonOutliers, :);

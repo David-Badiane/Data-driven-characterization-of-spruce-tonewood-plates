@@ -6,25 +6,25 @@ function [mechParameters, maps, f_out, amp_out] = ...
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs: 
-% options       = struct with options for minimization algorithm
-% fNet          = neural network object - neural network predicting eigenfrequencies
-% aNet          = neural network object - neural network predicting amplitudes
-% f0            = nPts x 1 cell - in each cell we have the frequencies of
+%   options       = struct with options for minimization algorithm
+%   fNet          = neural network object - neural network predicting eigenfrequencies
+%   aNet          = neural network object - neural network predicting amplitudes
+%   f0            = nPts x 1 cell - in each cell we have the frequencies of
 %                 the peaks of a single FRF
-% fAmps         = nPts x 1 cell - in each cell we have the amplitudes of
+%   fAmps         = nPts x 1 cell - in each cell we have the amplitudes of
 %                 the peaks of a single FRF
-% rho           = 1x1 double - density of the plate
-% NpeaksAxis    = nPeaks x 1 double - axis with the FRF peaks considered 
+%   rho           = 1x1 double - density of the plate
+%   NpeaksAxis    = nPeaks x 1 double - axis with the FRF peaks considered 
 %                                  in the minimization
-% plotData      = boolean to decide whether to plot or not
-% fixParamsVals = values for the material properties that are not optimized,
+%   plotData      = boolean to decide whether to plot or not
+%   fixParamsVals = values for the material properties that are not optimized,
 %                 (at least density and geometry)
-% fixParamsIdxs = indexes of the fixed params in the mechParams array
-% inputParsStart = first guess of material properties 
+%   fixParamsIdxs = indexes of the fixed params in the mechParams array
+%   inputParsStart = first guess of material properties 
 % -------------------------------------------------------------------------
 % outputs: 
-% L2            = 1x1 double - loss function value
-% maps          = real FRF - estimation associations
+%   L2            = 1x1 double - loss function value
+%   maps          = real FRF - estimation associations
 % -------------------------------------------------------------------------
     
    nPts = length(f0);

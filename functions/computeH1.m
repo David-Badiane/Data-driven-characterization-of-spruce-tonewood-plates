@@ -4,21 +4,21 @@ function [H1, coh, fAxis] = computeH1(force, acceleration, nfft, window, Fs, low
 % from force and acceleration measurements
 % -------------------------------------------------------------------------
 % inputs:
-% exc    = excitation           --> force vector or matrix    (double)
-% resp   = response             --> response vector or matrix (double)
-% nfft   = number of fft points --> (int)
-% window = tapering window for fft --> use hamm(floor(nfft/n)), choose n
+%   exc    = excitation           --> force vector or matrix    (double)
+%   resp   = response             --> response vector or matrix (double)
+%   nfft   = number of fft points --> (int)
+%   window = tapering window for fft --> use hamm(floor(nfft/n)), choose n
 %          can also define other windows outside before calling the function
-% Fs     = int - sampling frequency in Hz
-% lowHighCut = 2x1 array - low and high cut in frequency of the H1 
+%   Fs     = int - sampling frequency in Hz
+%   lowHighCut = 2x1 array - low and high cut in frequency of the H1 
 %                          estimator [lowCut, highCut]
-% algorithm  = to compute H1 for single vectors set to 'single', otherwise
+%   algorithm  = to compute H1 for single vectors set to 'single', otherwise
 %              on matrix 'multiple'
 % -------------------------------------------------------------------------
 % outputs:
-% H1     = array - H1 estimator of the mobility
-% coh    = array - coherence associated to the H1 estimator
-% fAxis  = array - frequency axis associated to the H1 estimator
+%   H1     = array - H1 estimator of the mobility
+%   coh    = array - coherence associated to the H1 estimator
+%   fAxis  = array - frequency axis associated to the H1 estimator
 % ------------------------------------------------------------------------- 
     if nargin < 7
         algorithm = 'multiple';

@@ -7,32 +7,32 @@ function [HPData, HP_filename_freq, HP_filename_amp] = NN_hyperparameters(nNeuro
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs
-% nNeuronsVec    = double - array with the number of neurons of the
-%                  grid search performed to tune the HPs of the NNs
-% nLayersVec     = double - array with the number of layers of the
-%                  grid search performed to tune the HPs of the NNs
-% nLaxis_f       = double - array with the number of layers of the frequency NN 
-% nLaxis_a       = double - array with the number of layers of the amplitude NN 
-% nModesGet      = int    - number of modes on which NNs are trained
-% baseFolder     = string - path of the base working directory
-% csvName        = string - name of the directory containing the dataset
-% flags          = array of 4 booleans [writeNewFiles doFreq doAmp saveData] 
+%   nNeuronsVec    = double - array with the number of neurons of the
+%                    grid search performed to tune the HPs of the NNs
+%   nLayersVec     = double - array with the number of layers of the
+%                    grid search performed to tune the HPs of the NNs
+%   nLaxis_f       = double - array with the number of layers of the frequency NN 
+%   nLaxis_a       = double - array with the number of layers of the amplitude NN 
+%   nModesGet      = int    - number of modes on which NNs are trained
+%   baseFolder     = string - path of the base working directory
+%   csvName        = string - name of the directory containing the dataset
+%   flags          = array of 4 booleans [writeNewFiles doFreq doAmp saveData] 
                    % writeNewFiles --> write new hyperparameters tuning csv files or load previous ones
                    % doFreq        --> perform hyperparameters tuning for NN that predicts eigenfrequencies
                    % doAmp         --> perform hyperparameters tuning for NN that predicts amplitudes
                    % saveData      --> save all data from HP tuning (trained neural networks,
-% sets_filename  = string - filename of the csv file containing the results of HP tuning
-% nRealizations  = int - n° times the grid search is carried on
-% getOrdered     = boolean - get sets ordered by modes or by the ascending
+%   sets_filename  = string - filename of the csv file containing the results of HP tuning
+%   nRealizations  = int - n° times the grid search is carried on
+%   getOrdered     = boolean - get sets ordered by modes or by the ascending
 %                  value of the eigenfrequencies
 % -------------------------------------------------------------------------
 % outputs
-% HPData         = cell array containing two structs:
-%                  HPData_freq or HPData_amp, both have the subsequent members
-%                  HP    --> matrice with the double averaged R2 (coefficient of determination)
+%   HPData       = cell array containing two structs:
+%                   HPData_freq or HPData_amp, both have the subsequent members
+%                   HP    --> matrice with the double averaged R2 (coefficient of determination)
 %                            averaged over all modes and over the number of realizations 
-%                  nets  --> trained neural networks
-%                  R2    --> R2 of each neural network
+%                   nets  --> trained neural networks
+%                   R2    --> R2 of each neural network
 % -------------------------------------------------------------------------
     if nargin <9, sets_filename = 'HPsets'; end
     if nargin<10, nRealizations = 1; end

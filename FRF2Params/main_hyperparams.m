@@ -37,7 +37,6 @@ mkdir(NNsPath);
 % add paths to workline
 idxs   = strfind(baseFolder,'\');
 addpath(genpath([baseFolder(1:idxs(end)), 'functions']));
-addpath([baseFolder, '\data']);
 addpath(csvPath);
 addpath(NNsPath);
 

@@ -1,16 +1,19 @@
-function [NCC] = NCC(simSig,measSig)
+function [NCC] = NCC(x,y)
 %NCC this function computes the normalized cross correlation function
-%   
-% simSig  (array) = simulated signal
-% measSig (array) = measured signal
+% between two signals 
+% inputs  
+%   x  (array) = simulated signal
+%   y (array)  = measured signal
+% outputs
+%   NCC (float) = normalized cross correlation coefficient
 
-if length(simSig(:,1)) == 1
-    simSig = simSig.';
+if length(x(:,1)) == 1
+    x = x.';
 end
-if length(measSig(:,1)) == 1
-    measSig = measSig.';
+if length(y(:,1)) == 1
+    y = y.';
 end
 
-NCC  = ( measSig'*simSig)/(norm(simSig,2)*norm(measSig,2));
+NCC  = ( y'*x)/(norm(x,2)*norm(y,2));
 end
 

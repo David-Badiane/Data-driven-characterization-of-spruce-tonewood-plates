@@ -11,22 +11,22 @@ function [modesNames, modesNCC] = modeshapes_labeling(pX,pY,...
 % space domain modeshapes
 % -------------------------------------------------------------------------
 % inputs: 
-% pX  = int - number of points on the x axis of the rectangular grid of modeshapes
-% pY  = int - number of points on the y axis of the rectangular grid of modeshapes
-% pxFFT = int - number of points on the x axis of the rectangular grid of modeshapes in Fourier domain
-% pyFFT = int - number of points on the y axis of the rectangular grid of modeshapes in Fourier domain
-% nModes =  int - number of modeshapes to be labeled
-% nTuples = int - number of labeled dataset tuples
-% plotFigures = boolean - select whether to plot figures while labeling (slow)
-% ref           = double array - reference set of modeshapes
-% refModesNames = cell array   - labels of the reference set of modeshapes
-% compareType   = string - can be "disp" or "fourier", 
-%                 selects the type of modeshapes to compare (fourier or displacement)
-% printData     = boolean - decide to print some messages while labeling (little bit slower)
+%   pX      = int - number of points on the x axis of the rectangular grid of modeshapes
+%   pY      = int - number of points on the y axis of the rectangular grid of modeshapes
+%   pxFFT   = int - number of points on the x axis of the rectangular grid of modeshapes in Fourier domain
+%   pyFFT   = int - number of points on the y axis of the rectangular grid of modeshapes in Fourier domain
+%   nModes  = int - number of modeshapes to be labeled
+%   nTuples = int - number of labeled dataset tuples
+%   plotFigures   = boolean - select whether to plot figures while labeling (slow)
+%   ref           = double array - reference set of modeshapes
+%   refModesNames = cell array   - labels of the reference set of modeshapes
+%   compareType   = string - can be "disp" or "fourier", 
+%                   selects the type of modeshapes to compare (fourier or displacement)
+%   printData     = boolean - decide to print some messages while labeling (little bit slower)
 % -------------------------------------------------------------------------
 % outputs:
-% modesNames = cell array - labels of all the modeshapes of the dataset
-% modesNCC   = NCC scores associated to each label
+%   modesNames = cell array - labels of all the modeshapes of the dataset
+%   modesNCC   = NCC scores associated to each label
 % -------------------------------------------------------------------------
  
 % colormap

@@ -6,23 +6,23 @@ function [Dataset_FA] = comsolRoutineFA_plate(model, nSim, nModes, dataset_cente
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs:                       
-% model            = comsol finite element model
-% nSim             = 1x1 double - number of simulations
-% nModes           = 1x1 double - number of modes calculated
-% dataset_center_values    = 1x15 double - nominal values of the dataset 
-% [density (1) elastic constants (9) Rayleigh constants (2) geometry (3)]
-% inputParamsNames = 1x15 cell array - names of the inputs of the dataset
-% standardDev      = 1x15 double - std of the dataset inputs
-% mshapesPath      = string - directory where modeshapes are stored
-% datasetPath      = string - directory where dataset is stored
-% writeNow         = boolean - if true --> dataset computation starts from zero
-%                              if false --> dataset computation starts from
-%                              the data that already are in its directory
-% samplingMethod   = string - specifies the distribution of the dataset inputs
-%                             can be either 'uniform' or 'gaussian' 
+%   model            = comsol finite element model
+%   nSim             = 1x1 double - number of simulations
+%   nModes           = 1x1 double - number of modes calculated
+%   dataset_center_values    = 1x15 double - nominal values of the dataset 
+%                              [density (1) elastic constants (9) Rayleigh constants (2) geometry (3)]
+%   inputParamsNames = 1x15 cell array - names of the inputs of the dataset
+%   standardDev      = 1x15 double - std of the dataset inputs
+%   mshapesPath      = string - directory where modeshapes are stored
+%   datasetPath      = string - directory where dataset is stored
+%   writeNow         = boolean - if true --> dataset computation starts from zero
+%                                if false --> dataset computation starts from
+%                                the data that already are in its directory
+%   samplingMethod   = string - specifies the distribution of the dataset inputs
+%                               can be either 'uniform' or 'gaussian' 
 % -------------------------------------------------------------------------
 % outputs:
-% Dataset_FA       = struct containing the raw Dataset
+%   Dataset_FA       = struct containing the raw Dataset
 %                    fields --> inputs
 %                               outputsEig, outputsAmp 
 % -------------------------------------------------------------------------

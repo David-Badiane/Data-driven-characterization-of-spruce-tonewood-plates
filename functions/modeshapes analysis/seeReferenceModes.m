@@ -4,12 +4,12 @@ function [] = seeReferenceModes(modesAnalysisPath,pX, pY,subplotnRows, subplotnC
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs:
-% modesAnalysisPath = string - path of the modesAnalysis directory
-% pX                = int - number of points on the x axis
-% pY                = int - number of points on the y axis
-% subplotnRows      = int - subplot of the figure, total number of rows
-% subplotnCols      = int - subplot of the figure, total number of columns
-% showFourier       = boolean - to show reference set in space fourier domain 
+%   modesAnalysisPath = string - path of the modesAnalysis directory
+%   pX                = int - number of points on the x axis
+%   pY                = int - number of points on the y axis
+%   subplotnRows      = int - subplot of the figure, total number of rows
+%   subplotnCols      = int - subplot of the figure, total number of columns
+%   showFourier       = boolean - to show reference set in space fourier domain 
 %                     or space domain
 % -------------------------------------------------------------------------
 % outputs:

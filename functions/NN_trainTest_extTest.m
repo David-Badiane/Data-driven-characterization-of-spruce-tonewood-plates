@@ -7,20 +7,20 @@ function  [R2_NN, net, tr] = ...
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs
-% trainIn   = nTuples train x nInputs double  - train set inputs
-% trainOut  = nTuples train x nOutputs double - train set outputs
-% testIn    = nTuples test x nInputs double   - test set inputs
-% testOut   = nTuples test x nOutputs double  - test set inputs
-% nNeurons  = int - number of neurons of the MFNN 
-% nLayers   = int - number of layers of the MFNN
-% strTitle  = string  - title of a figure with a scatter plot of test results
-% plotData  = boolean - select whether to plot the scatter plot or not
-% figNumber = int - number of the plotted figure
+%   trainIn   = nTuples train x nInputs double  - train set inputs
+%   trainOut  = nTuples train x nOutputs double - train set outputs
+%   testIn    = nTuples test x nInputs double   - test set inputs
+%   testOut   = nTuples test x nOutputs double  - test set inputs
+%   nNeurons  = int - number of neurons of the MFNN 
+%   nLayers   = int - number of layers of the MFNN
+%   strTitle  = string  - title of a figure with a scatter plot of test results
+%   plotData  = boolean - select whether to plot the scatter plot or not
+%   figNumber = int - number of the plotted figure
 % -------------------------------------------------------------------------
 % outputs
-% R2_NN     = coefficient of determination of the neural network (testing)
-% net       = trained MFNN
-% tr        = training data
+%   R2_NN     = coefficient of determination of the neural network (testing)
+%   net       = trained MFNN
+%   tr        = training data
 % -------------------------------------------------------------------------
 % automatic setting if there are less input arguments than expected
 if (nargin <= 6 || nargin <= 7 || nargin <= 8) 
