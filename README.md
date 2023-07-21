@@ -28,7 +28,7 @@ As you can see, you can find three directories:
 The dataset is cav_gplates, modeshapes are missing due to their size, the link is available here 
 
 
-##FRF2Params
+## FRF2Params
 
 make a flow diagram with main codes name and their role
 
@@ -36,7 +36,7 @@ after the flow diagram describe each main program
 
 state the name of every element you can find in the repo
 
-##Functions
+## Functions
 
 create a overleaf pdf file to include in the repo, the pdf file is the complete documentation, over there it will be possible to find the detailed description of each function
 
