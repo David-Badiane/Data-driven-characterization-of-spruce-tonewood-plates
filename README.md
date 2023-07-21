@@ -15,7 +15,7 @@ The flow diagram of *FRF2Params* is reported in the figure below. First it is ne
 # Repository Description
 
 As you can see, you can find three directories:
-- **FRF2Params** --> this directory contains
+- **FRF2Params** --> this directory contains:
    - the main files containing all the code that must be executed in order to apply *FRF2Params* or to analyse the dataset;
    - the measured FRFs, geometry and density of ten book-matched thin plates of spruce;
    - the Comsol Multiphysics finite element model of the plate;
