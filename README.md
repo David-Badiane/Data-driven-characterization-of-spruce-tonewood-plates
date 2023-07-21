@@ -16,11 +16,11 @@ The flow diagram of *FRF2Params* is reported in the figure below. First it is ne
 
 As you can see, you can find three directories:
 - **FRF2Params** --> this directory contains
- - the main files containing all the code that must be executed in order to apply *FRF2Params* or to analyse the dataset;
- - the measured FRFs, geometry and density of ten book-matched thin plates of spruce;
- - the Comsol Multiphysics finite element model of the plate;
- - the generated dataset, with or without modes identification;
- - the estimations of the material parameters along with their associated uncertainties and simulated FRFs;
+   - the main files containing all the code that must be executed in order to apply *FRF2Params* or to analyse the dataset;
+   - the measured FRFs, geometry and density of ten book-matched thin plates of spruce;
+   - the Comsol Multiphysics finite element model of the plate;
+   - the generated dataset, with or without modes identification;
+   - the estimations of the material parameters along with their associated uncertainties and simulated FRFs;
 - **Functions** --> this directory contains all functions and modules employed in FRF2Params;
 - **Figures** --> this directory contains the figures that you see in this *README.md* file. 
 
