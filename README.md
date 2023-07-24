@@ -32,7 +32,7 @@ The dataset is cav_gplates, modeshapes are missing due to their size, the link i
 
 ## FRF2Params
 
-make a flow diagram with main codes name and their role
+<img align="center" src="/Figures/code Flowchart.png">
 
 after the flow diagram describe each main program
 
