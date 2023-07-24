@@ -1,4 +1,4 @@
-%%  ______________________ MAIN OBTAIN EXPERIMENTAL FRF ___________________
+%%  ______________________ MAIN COMPUTE EXP FRF ___________________
 % THIS PROGRAM COMPUTES THE EXPERIMENTAL FRFS WITH THE H1 ESTIMATOR
 % STARTING FROM FORCE AND ACCELERATION MESUREMENTS 
 % A) computes H1 estimator
