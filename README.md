@@ -15,6 +15,7 @@ Wood is usually modeled as an ortothropic material. Ortothropic materials are ch
 The flow diagram of *FRF2Params* is reported in the figure below. First it is necessary to define a finite element model of the plate FRF and define where that FRF must be acquired. Once defined, the finite element model is used to generate a dataset containing the eigenfrequencies of the plate and their amplitude in the FRF as the elastic properties, the density, the geometry and the damping of the plate vary. Then, the dataset is used to train two neural networks, one for frequency and one for amplitude. In the meanwhile, the FRF of the plate under test must be acquired and it's peaks must be detected. Finally, the neural networks are employed in a optimization procedure to minimize the frequency distance between the peaks of the measured FRF and their predictions.
 
 <img align="center" src="/Figures/method Flowchart.png">
+
 # Repository Description
 
 As you can see, you can find three directories:
