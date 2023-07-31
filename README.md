@@ -46,40 +46,42 @@ In the following we will describe each module.
 #### main_FRF2Params.m
 This module applies FRF2Params on ten book matched spruce tonewood plates.
 tasks:
-A) Dataset generation
-B) FRF2Params application
-C) Validation with Comsol
+- A) Dataset generation
+- B) FRF2Params application
+- C) Validation with Comsol
 
 #### main_hyperparams.m
 This module optimizes the topology, i.e. the number of layers and number of neurons per layer, of the feedforward neural networks employed to predict the plate eigenfrequencies and the corresponding FRF amplitude. This task is also known as hyperparameters tuning. 
 
 Tasks:
-A) split dataset in train set and test set
-B) hyperparameters tuning
-C) optimized nns training
+- A) split dataset in train set and test set
+- B) hyperparameters tuning
+- C) optimized nns training
 
 #### main_modesAnalysis.m
 This module analyzes the modal shapes of the dataset generated with Comsol Multiphysics livelink for Matlab in this repo.
 
 Tasks:
-A) resample the modeshapes of the dataset on a regular rectangular grid
-B) compare the resampled modeshapes of the dataset with a reference set of modeshapes
-C) label modeshapes and order the dataset by modes
+- A) resample the modeshapes of the dataset on a regular rectangular grid
+- B) compare the resampled modeshapes of the dataset with a reference set of modeshapes
+- C) label modeshapes and order the dataset by modes
 
 #### main_compute_exp_FRF.m
 This module computes the H_1 estimator of the mobility (velocity / force) starting from force and acceleration measurements and performs peaks analysis on the estimated FRFs.
 
 Tasks:
-A) computation of the H1 estimator
-B) peak analysis on the estimated FRFs
+- A) computation of the H1 estimator
+- B) peak analysis on the estimated FRFs
 
 #### main_sensitivity_analysis.m
 This module analyzes the input/output relationship of the dataset by computing the Pearson's correlation coefficient between each input and each output of the dataset. This allows us to understand how much sensible are the plate eigenfrequencies and the associate FRF amplitudes to the variation of each input parameter of the dataset.  
 
 Tasks:
-A) Computation of the correlation between inputs and outputs of the dataset, with or without modes ordering
-B) Representation of the correlation data in two images, one for frequency and one for amplitude
+- A) Computation of the correlation between inputs and outputs of the dataset, with or without modes ordering
+- B) Representation of the correlation data in two images, one for frequency and one for amplitude
+
 ## Folders
+
 ### FRF2Params
 <img align="center" src="/Figures/FRF2Params_dir_descr.png">
 
