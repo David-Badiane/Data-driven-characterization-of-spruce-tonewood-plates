@@ -39,4 +39,5 @@ The dataset directory name is *csv_gplates*, modeshapes are missing due to their
 <img align="center" src="/Figures/functions_dir_descr.png">
 
 
-#### A more complete and comprehensive documentation of the code can be found in the repository --> documentation.pdf
+#### A complete and comprehensive description of this repository can be found in the repository itself
+## documentation.pdf
