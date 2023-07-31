@@ -36,6 +36,6 @@ The dataset directory name is *csv_gplates*, modeshapes are missing due to their
 <img align="center" src="/Figures/FRF2Params_dir_descr.png">
 
 ## Functions
-<img align="center" src="/Figures/FRF2Params_dir_descr.png">
+<img align="center" src="/Figures/functions_dir_descr.png">
 
 ### A more complete and comprehensive documentation of the code can be found in the repository --> documentation.pdf
