@@ -2,7 +2,7 @@
 This repository contains all the measurements, data, *Matlab* code and *Comsol Multiphysics* finite element (FE) model related to my (David Giuseppe Badiane) master thesis work and the article <!-- *"A neural network-based method for spruce tonewood characterization", Journal of Acoustic Society of America (JASA)* (David Giuseppe Badiane, Raffaele Malvermi, Sebastian Gonzalez, Fabio Antonacci, Augusto Sarti)
 -->.
 
-The article presents a novel neural network based inverse method to estimate the material properties of thin plates of spruce tonewood. 
+This repository stores the implementation of a novel neural network based inverse method to estimate the material properties of thin plates of spruce tonewood. 
 
 
 # Introduction
