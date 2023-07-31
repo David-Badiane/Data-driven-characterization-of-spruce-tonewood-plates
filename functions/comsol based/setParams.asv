@@ -1,7 +1,0 @@
-function [] = setParams(model,paramsNames, paramsVals)
-% SETPARAMS(model,paramsNames, paramsVals)
-% This function set the params corresponding to paramsNames
-    for jj = 1:length(paramsVals)
-            model.param.set(paramsNames(jj), paramsVals(jj));
-    end
-end

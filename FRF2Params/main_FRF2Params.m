@@ -7,7 +7,7 @@
 % C) Validation with Comsol
 % -------------------------------------------------------------------------
 % ~ Notice that the neural networks are trained and saved with main_hyperparams
-% ~ The FRFs are aquired with                                  main_obtain_experimental_FRF
+% ~ The FRFs are aquired with                                  main_compute_exp_FRF
 % ~ Datasets are ordered by mode numbers in                    main_modesAnalysis
 % -------------------------------------------------------------------------
 % summary:
@@ -216,13 +216,12 @@ for plateN = plateNumbers % for each plate
     damping = [alphas(plateN), betas(plateN)];       % damping
     
     % set first guess for mech params
-%     input_parameters_start = get_first_guess_from_dataset(Dataset_FA,...
-%          f0, fAmps, fNet, aNet, density, geometry, damping, sampleSize, dataset_centerVals);
     if use_refvals_as_first_guess
         input_parameters_start = [density firstguess_parameters(plateN,2:10) damping geometry];
     else
         input_parameters_start = [density dataset_centerVals(2:10) damping geometry];
-    end                               
+    end  
+    
     % values of constant params
     constant_params_values = input_parameters_start(fixParamsIdxs);
     % show values of constant params

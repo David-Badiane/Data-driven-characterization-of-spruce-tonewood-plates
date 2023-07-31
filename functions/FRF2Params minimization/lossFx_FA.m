@@ -1,9 +1,14 @@
 function [L2, map] = lossFx_FA(fEst, aEst, fReal, aReal, NpeaksAxis,...
             plotData, figN)
 % LOSSFX_FA    
-% lossFx_FA is a function that computes the objective function of the
-% minimization in the frequency/amplitude space
-% copyright: David Giuseppe Badiane
+% Computes the loss function of the minimization. 
+% Loss Fx is computed in 4 steps in the frequency/amplitude (FA) space: 
+% 1) normalization btw R = (fReal, aReal) and E = (fEst, aEst)
+% 2) euclidean FA space distance btw each R and all E
+% 3) for each R select closest E
+% 4) Loss Fx = relative frequency difference btw R and closest E
+% This because not all eigenfrequencies of the plate correspond to
+% peaks in the FRF, we need to discard the "antiresonances"
 % ---------------------------------------------------------------------
 % inputs:
 %   fEst = 12x1 double - frequencies estimated by fNetwork

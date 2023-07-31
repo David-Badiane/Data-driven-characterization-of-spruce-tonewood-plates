@@ -2,7 +2,7 @@
 % THIS PROGRAM COMPUTES THE EXPERIMENTAL FRFS WITH THE H1 ESTIMATOR
 % STARTING FROM FORCE AND ACCELERATION MESUREMENTS 
 % A) computes H1 estimator
-% B) saves it
+% B) peak analysis on the estimated FRFs
 % -------------------------------------------------------------------------
 % summary:
 % section 0) PRESET DIRECTORIES, INIT VARIABLES
@@ -26,7 +26,7 @@ idxs   = strfind(baseFolder,'\');
 addpath(genpath([baseFolder(1:idxs(end)), 'functions']));
 
 % B) set variables
-measuredSamples = {'1' '2' '3' '4' '5' '6' '7' '8' '9' '10'}; % plates labels
+measuredSamples = {'1L' '1R' '2L' '2R' '3L' '3R' '4L' '4R' '5L' '5R'}; % plates labels
 nPlates = length(measuredSamples); % number of measurement points in the violin plate
 fHigh = 2000;     % high bound of the frequency axis
 fLow = 20;        % lower bound of the frequency axis

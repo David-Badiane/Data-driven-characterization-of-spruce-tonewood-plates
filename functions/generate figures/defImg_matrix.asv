@@ -7,10 +7,8 @@ function imgData = defImg_matrix(xIdxs, yIdxs, xLengthImg, yLengthImg, imgN, xLa
     % copyright: David Giuseppe Badiane
     % ---------------------------------------------------------------------
     % inputs:
-    % xIdxs        = int array - indexes to plot in the x axis
-    % yIdxs        = int array - indexes to plot in the y axis
-    %                n.b. xIdxs & yIdxs allow to select a submatrix of the
-    %                main matrix
+    % xIdxs        = int array - indexe
+    % yIdxs        =
     % xLength      = (int) img window xLength
     % yLength      = (int) img window yLength
     % imgN         = (int) img number

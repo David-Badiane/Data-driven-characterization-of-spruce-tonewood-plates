@@ -1,6 +1,6 @@
 %% _____________________ MAIN MODES ANALYSIS ______________________________
-% This program allows to perform modes analysis on a dataset using the
-% retrieved modeshapes
+% PERFORMS MODES ANALYSIS ON A DATASET USING A SET OF REFERENCE
+% MODE SHAPES
 % pipeline:
 % - A) resample the modeshapes of the dataset on a regular rectangular grid
 % - B) compare the resampled modeshapes of the dataset with a reference set
@@ -396,7 +396,7 @@ end
 % delete remaining poisson plates
 if deletePlates, nonOutliers(poissonPlates) = []; end
 
-%% 8) SEE obtained modeshapes
+%% 7) SEE obtained modeshapes
 % =========================================================================
 if plotFigures
     tuples2See = 1:nTuples

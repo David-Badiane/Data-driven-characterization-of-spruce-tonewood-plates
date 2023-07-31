@@ -2,7 +2,7 @@ function [] = modeshapes_resampling(pX,pY,nCols, nTuples,...
     resampledFolder, plotData)
 % RESAMPLEMSHAPES
 % this function allows to resample modeshapes from Comsol irregular
-% rectangular grid to a regular rectangular grid
+% grid to a regular rectangular grid
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs:

@@ -1,6 +1,9 @@
-%% ____________________ MAIN FRF2PARAMS ___________________________________
-% THIS PROGRAM APPLIES FRF2PARAMS TO ESTIMATE MATERIAL PROPERTIES OF PLATES.
-% In this program we have:
+%% ____________________ MAIN SENSITIVITY ANALYSIS _________________________
+% THIS PROGRAM ANALYZES THE INPUT/OUTPUT RELATION OF THE DATASET, ALLOWING
+% US TO UNDERSTAND HOW MUCH THE PLATE EIGENFREQUENCIES AND CORRESPONDING
+% FRF AMPLITUDES ARE SENSIBLE TO VARIATIONS OF ITS MECHANICAL PARAMETERS
+%
+% tasks:
 % A) Computation of the correlation between inputs and outputs of the
 %    dataset
 % b) Representation of the correlation data in two images, one for

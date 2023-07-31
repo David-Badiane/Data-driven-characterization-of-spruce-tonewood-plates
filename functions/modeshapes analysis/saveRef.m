@@ -1,4 +1,17 @@
  function [] = saveRef(ref, refModesNames, modesAnalysisPath, isSum)
+ % saves the reference set of modes
+ % ---------------------
+ % INPUTS:
+ % ref               = (nPts x nRefModes) 2DArray
+ %                     reference set of modeshapes
+ % refModesNames     = cell array 
+ %                     labels (e.g. f_02) associated to the reference set
+ % modesAnalysisPath = string
+ %                     path to the modes analysis directory of csv_gPlates
+ % isSum <--- deprecated, ignore it
+ % ---------------------
+ % OUTPUTS:
+ % ~
 if nargin<4, isSum = 0; end
     
  cd(modesAnalysisPath)

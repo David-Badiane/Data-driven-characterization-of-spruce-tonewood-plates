@@ -15,7 +15,7 @@ function [fileData] = readTuples(filename, rows, transpose)
  
  fclose(file);
  if transpose 
-     fileData = fileData';
+     fileData = fileData.';
  end
 end
 

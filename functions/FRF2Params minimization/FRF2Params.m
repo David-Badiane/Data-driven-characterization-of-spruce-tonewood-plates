@@ -1,8 +1,8 @@
 function [mechParameters, maps, f_out, amp_out] = ...
           FRF2Params(options, fNet, aNet, f0, fAmps,...
           NpeaksAxis, plotData, fixParamsVals, fixParamsIdxs,inputParsStart)
-% errorFA - objective function of the minimization - predicts frequency and amplitude of FRF peaks for given material
-% properties and computes the loss function; allows to evaluate multiple FRFs computed on multiple points
+% FRF2Params - calls the minimization procedure with @error_FA  set as objective
+% function
 % copyright: David Giuseppe Badiane
 % -------------------------------------------------------------------------
 % inputs: 

@@ -1,5 +1,5 @@
-function [freqs] = minimizations_finalFigures(f0, fNet, xpar,NpeaksAxis, plotData)
-% getFrequencyEstimation generates a figure to see how the estimation is
+function [freqs] = minimization_finalFigures(f0, fNet, xpar,NpeaksAxis, plotData)
+%  generates a figure to see how the estimation is
 % accurate under the frequency profile
 % -------------------------------------------------------------------------
 % inputs: 
@@ -28,7 +28,7 @@ function [freqs] = minimizations_finalFigures(f0, fNet, xpar,NpeaksAxis, plotDat
         ax.FontSize = 17;
         title(['freq difference', num2str(NpeaksAxis)]);
         pause(0.01)
-        xlim([1 12]);
+        xlim([112]);
         ll = legend('real', 'estimated');
         set(ll, 'Box', 'off');
         ylabel('frequency [Hz]', 'Interpreter', 'latex', 'fontSize',18)

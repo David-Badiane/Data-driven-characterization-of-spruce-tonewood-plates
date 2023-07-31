@@ -3,27 +3,34 @@ function [imgData, FRFData] = defImg_comparison_FRFs( xLengthImg, yLengthImg, im
                             areaAlpha, legenda, lineWidth,...
                             cutHigh, cutLow, FRF, fAxis, fAxisComsol, comsol_FRF,...
                             alpha, beta, nRealizations, xyScale)
-% defImg_pointFRFCompare - function to define the parameters of the image
-% comparing experimental and simulated FRFs
-% copyright: David Giuseppe Badiane
-% -------------------------------------------------------------------------
-% ImgData : struct with the data of the image
-%           xLengthImg, yLengthImg    --> 1x1 doubles x and y length of figure
-%           imgN                      --> image number
-%           xyLabels                  --> xLabel and yLabel - strings
-%           areaColor, areaAlpha      --> alpha and color of the area between the two FRFs
-%            axFontSize               --> 1x1 double, axis font size
-%           legenda        --> string - legend of the figure
-%           lineWidth      --> 1x1 double width of the line
-%           xScale, yScale --> strings - specify linear or log scale for x and y, respectively
-%
-% FRFData : struct with the data of the experimental and simulated FRFs
-%           FRF, fAxis              --> 1xN double, experimental FRF and associated frequency axis
-%           comsol_FRF, fAxisComsol --> 1xM double, simulated FRF and associated frequency axis  
-%           alpha, beta             --> 1x1 doubles, damping variables
-%           nRealizations           --> nRealizations of the estimation associated to the simulated FRF
-
-    
+% This function wraps the parameters of an image comparing two FRFs
+% INPUTS: 
+%  Imgdata entries:
+%   xLengthImg = (float) - x length of the figure
+%   yLengthImg = (float) - y length of the figure
+%   imgN       = (int) - figure number
+%   xyLabels   = (cell, len = 2) - cell with xLabel and yLabel strings
+%   areaColor  = (1DArray, len = 3) - color of the area between the FRFs 
+%   areaAlpha  = (float) - transpacerncy of the area color, in [0,1]
+%   axFontSize = (int) - font size of the axis
+%   legenda    = (string) - legend of the figure
+%   lineWidth  = (float) - width of the FRF line
+%   xyscale    = (cell, len = 2) - {xScale, yScale} can be 'log' or 'linear'
+%  FRFData entries:
+%   cutHigh       = (float) - low bound of the frequency axis
+%   cutLow        = (float) - high bound of the frequencye axis
+%   FRF           = (1DArray) - measured FRF
+%   fAxis         = (1DArray) - axis of the measured FRF
+%   fAxisComsol   = (1DArray) - axis of simulated FRF
+%   comsol_FRF    = (1DArray) - FRF simulated with Comsol Multiphysics
+%   alpha         = (float) - Rayleigh damping parameter alpha value
+%   beta          = (float) - Rayleigh damping parameter beta value
+%                             n.b. you can annotate them in the figure
+%   nRealizations = (int) - number of realizations with which the results
+%                            of FRF2Params are computed
+% ------------------------------------------------------------------------
+% imgData : struct wrapping the parameters of the image
+% FRFData : struct wrapping the data of experimental and simulated FRFs
     if nargin < 23
         xyScale = {'linear' 'linear'};
     end
