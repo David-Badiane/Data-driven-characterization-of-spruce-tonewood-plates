@@ -3,7 +3,8 @@ This repository contains all the measurements, data, *Matlab* code and *Comsol M
 -->.
 
 This repository stores the implementation of a novel neural network based inverse method to estimate the material properties of thin plates of spruce tonewood. 
-The following readMe is introductive, a complete and comprehensive description of this repository can be found [HERE](https://drive.google.com/file/d/16TtDSVASsElo3O6E2Eg_PLCec_CobRyA/view?usp=sharing) or in the repository itself --> *documentation.pdf*.
+
+The following README is only introductive - a complete and comprehensive description of this repository can be found [HERE](https://drive.google.com/file/d/16TtDSVASsElo3O6E2Eg_PLCec_CobRyA/view?usp=sharing) or in the repository itself --> *documentation.pdf*.
 
 # Introduction
 
