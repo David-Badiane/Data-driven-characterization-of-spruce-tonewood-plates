@@ -89,6 +89,5 @@ Tasks:
 <img align="center" src="/Figures/functions_dir_descr.png">
 
 ## Authors
-- (code and repo) David Giuseppe Badiane
-- (supervision)   Raffaele Malvermi
-                Sebastian Gonzalez
+- (code and repo) David Giuseppe Badiane;
+- (supervision) Sebastian Gonzalez, Raffaele Malvermi, Fabio Antonacci.
