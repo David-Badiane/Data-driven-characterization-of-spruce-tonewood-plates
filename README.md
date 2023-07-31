@@ -39,7 +39,9 @@ The dataset directory name is *csv_gplates*, modeshapes are missing due to their
 
 ### Modules
 The flow diagram shown before is implemented via five *main_.m* modules and a finite element model as follows:
+
 <img align="center" src="/Figures/code Flowchart.png">
+
 In the following we will describe each module.
 #### main_FRF2Params.m
 This module applies FRF2Params on ten book matched spruce tonewood plates.
@@ -78,7 +80,6 @@ This module analyzes the modal shapes of the dataset generated with Comsol Multi
 - section 7) - plot modeshapes: plots the identified modes for each dataset tuple;
 - section 8) - define modes order: analyzes modes identification data to find the most common succession of the modes the frequency increases. This succession will define the order in which modes are listed in the dataset ordered by modes;
 - section 9) - generate and save ordered dataset: orders the dataset by modes and saves it. The dataset columns are ordered with the ordering defined in the previous section.
-<img align="center" src="/Figures/FRF2Params_dir_descr.png">
 
 #### main_compute_exp_FRF.m
 This module computes the H_1 estimator of the mobility (velocity / force) starting from force and acceleration measurements and performs peaks analysis on the estimated FRFs.
@@ -87,9 +88,8 @@ This module computes the H_1 estimator of the mobility (velocity / force) starti
 This module analyzes the input/output relationship of the dataset by computing the Pearson's correlation coefficient between each input and each output of the dataset. This allows us to understand how much sensible are the plate eigenfrequencies and the associate FRF amplitudes to the variation of each input parameter of the dataset.  
 
 ## Folders
-
 ### FRF2Params
-<img align="center" src="/Figures/code Flowchart.png">
+<img align="center" src="/Figures/FRF2Params_dir_descr.png">
 
 ### Functions
 <img align="center" src="/Figures/functions_dir_descr.png">
