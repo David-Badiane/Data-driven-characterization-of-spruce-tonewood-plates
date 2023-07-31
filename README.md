@@ -3,7 +3,7 @@ This repository contains all the measurements, data, *Matlab* code and *Comsol M
 -->.
 
 This repository stores the implementation of a novel neural network based inverse method to estimate the material properties of thin plates of spruce tonewood. 
-
+The following readMe is introductive, a complete and comprehensive description of this repository can be found [HERE](https://drive.google.com/file/d/16TtDSVASsElo3O6E2Eg_PLCec_CobRyA/view?usp=sharing) or in the repository itself --> *documentation.pdf*.
 
 # Introduction
 
@@ -29,7 +29,7 @@ As you can see, you can find three directories:
 - **Functions** --> this directory contains all functions and modules employed in FRF2Params;
 - **Figures** --> this directory contains the figures that you see in this *README.md* file. 
 
-The dataset directory name is *csv_gplates*, modeshapes are missing due to their size, the link is available [HERE](https://drive.google.com/file/d/1pHcqZKaihc7UNpUfCX5Sw652mwhAkiLH/view?usp=drive_link) 
+The dataset directory name is *csv_gplates*, modeshapes are missing due to their size, the link is available [HERE](https://drive.google.com/file/d/1pHcqZKaihc7UNpUfCX5Sw652mwhAkiLH/view?usp=drive_link). modeshapes should be extracted in the folder *Modeshapes* in the *csv_gPlates* directory.
 
 ## FRF2Params
 <img align="center" src="/Figures/code Flowchart.png">
@@ -37,7 +37,3 @@ The dataset directory name is *csv_gplates*, modeshapes are missing due to their
 
 ## Functions
 <img align="center" src="/Figures/functions_dir_descr.png">
-
-
-#### A complete and comprehensive description of this repository can be found in the repository itself
-## documentation.pdf
