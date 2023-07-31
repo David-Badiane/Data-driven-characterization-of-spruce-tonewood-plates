@@ -45,48 +45,40 @@ The flow diagram shown before is implemented via five *main_.m* modules and a fi
 In the following we will describe each module.
 #### main_FRF2Params.m
 This module applies FRF2Params on ten book matched spruce tonewood plates.
-
-- section 0) - init: sets up the Matlab search path, declares flags and variables, reads geometry and mass measurements;
-- section 1 - FRFs + Caldersmith: loads the measured FRFs from *measFRFs.mat* and applies Caldersmith formulas to later compare it with the results of FRF2Params;
-- section 2) - dataset generation: generates the dataset with *Comsol Livelink for Matlab*. The dataset is stored in *csv\_gPlates* with three .csv files, namely *inputs.csv, *outputsAmp.csv* and *outputsEig.csv*;
-- section 3) - FRF2Params minimization: applies FRF2Params minimization to estimate the mechanical parameters of the plates;
-- section 4) validation - eigenfrequencies : uses *Comsol Livelink for Matlab* to compute the plate eigenfrequencies as its mechanical parameters are set to the estimates obtained with *FRF2Params*. The eigenfrequencies are then compared to the frequency values of the peaks of the plate FRF;  
-- section 5) - validation FRFs, simulation: uses *Comsol Livelink for Matlab* to compute the plate FRF over a user defined number of points as its mechanical parameters are set to the estimates obtained with *FRF2Params.
-- section 5.1) - validation FRFs, postprocessing: visually compares the simulated FRF and the experimentally acquired one with a figure. Computes metrics to assess the similarity between the two.
+tasks:
+A) Dataset generation
+B) FRF2Params application
+C) Validation with Comsol
 
 #### main_hyperparams.m
 This module optimizes the topology, i.e. the number of layers and number of neurons per layer, of the feedforward neural networks employed to predict the plate eigenfrequencies and the corresponding FRF amplitude. This task is also known as hyperparameters tuning. 
 
-- section 0) - init: sets up the Matlab search path, declares flags and variables;
-- section 1) - split dataset into train and test sets: randomly splits the dataset into train set and test set, saves them back in the directory *csv_gPlates/HyperParameters*;
-- section 2) - hyperparameters tuning: performs hyperparameters tuning on both frequency and amplitude neural networks;
-- section 3) - max and min R2: finds the best and the worst architectures for both frequency and amplitude neural networks;
-- section 4) - Train optimal NNs: trains the neural networks with the optimal architecture and saves them in the directory *csv_gPlates/Neural Netorks*;
-- section 5) - plot figures: plots hyperparameters tuning data;
+Tasks:
+A) split dataset in train set and test set
+B) hyperparameters tuning
+C) optimized nns training
 
 #### main_modesAnalysis.m
 This module analyzes the modal shapes of the dataset generated with Comsol Multiphysics livelink for Matlab in this repo.
 
-- section 0) - init: sets up the Matlab search path, declares flags and variables, fetches dataset;
-- section 1) - resample modeshapes: resamples modeshapes from Comsol irregular grid to a regular user defined rectangular grid;
-- section 2) - compute reference set: computes the reference set of modeshapes with *Comsol livelink with Matlab*;
-- section 3) - resample reference modeshapes: resamples the reference set of modeshapes from the irregular grid of Comsol to a user defined regular rectangular grid;
-- section 4.1) - see reference modeshapes: plots the reference set of modeshapes;
-- section 5) - modes identification}: performs modes identification by computing the normalised cross correlation (NCC) between the modal shapes of each dataset tuple and the reference set. Each mode is identified with the best scoring reference mode name;
-- section 5) - modes identification, NCC computation: performs modes identification by computing the normalised cross correlation (NCC) between the modal shapes of each dataset tuple and the reference set;
-- section 5.1) - modify reference set: allows to modify the reference set of modal shapes;
-- section 6) - modes identification, postprocessing: analyzes NCC data, labels each Labels each mode with the reference mode scoring the highest NCC, discards tules with either repeated modes or at least one mode with NCC < 0.9
-- section 6.1) - postprocessing: removes Poisson plates from the dataset;
-- section 7) - plot modeshapes: plots the identified modes for each dataset tuple;
-- section 8) - define modes order: analyzes modes identification data to find the most common succession of the modes the frequency increases. This succession will define the order in which modes are listed in the dataset ordered by modes;
-- section 9) - generate and save ordered dataset: orders the dataset by modes and saves it. The dataset columns are ordered with the ordering defined in the previous section.
+Tasks:
+A) resample the modeshapes of the dataset on a regular rectangular grid
+B) compare the resampled modeshapes of the dataset with a reference set of modeshapes
+C) label modeshapes and order the dataset by modes
 
 #### main_compute_exp_FRF.m
 This module computes the H_1 estimator of the mobility (velocity / force) starting from force and acceleration measurements and performs peaks analysis on the estimated FRFs.
 
+Tasks:
+A) computation of the H1 estimator
+B) peak analysis on the estimated FRFs
+
 #### main_sensitivity_analysis.m
 This module analyzes the input/output relationship of the dataset by computing the Pearson's correlation coefficient between each input and each output of the dataset. This allows us to understand how much sensible are the plate eigenfrequencies and the associate FRF amplitudes to the variation of each input parameter of the dataset.  
 
+Tasks:
+A) Computation of the correlation between inputs and outputs of the dataset, with or without modes ordering
+B) Representation of the correlation data in two images, one for frequency and one for amplitude
 ## Folders
 ### FRF2Params
 <img align="center" src="/Figures/FRF2Params_dir_descr.png">
