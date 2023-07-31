@@ -29,25 +29,13 @@ As you can see, you can find three directories:
 - **Functions** --> this directory contains all functions and modules employed in FRF2Params;
 - **Figures** --> this directory contains the figures that you see in this *README.md* file. 
 
-
 The dataset directory name is *csv_gplates*, modeshapes are missing due to their size, the link is available [HERE](https://drive.google.com/file/d/1pHcqZKaihc7UNpUfCX5Sw652mwhAkiLH/view?usp=drive_link) 
 
-
 ## FRF2Params
-
 <img align="center" src="/Figures/code Flowchart.png">
-
-after the flow diagram describe each main program
-
-state the name of every element you can find in the repo
+<img align="center" src="/Figures/FRF2Params_dir_descr.png">
 
 ## Functions
+<img align="center" src="/Figures/functions_dir_descr.png">
 
-create a overleaf pdf file to include in the repo, the pdf file is the complete documentation, over there it will be possible to find the detailed description of each function
-
-
-
-
-
-
-
+### A more complete and comprehensive documentation of the code can be found in the repository --> documentation.pdf
