@@ -30,7 +30,7 @@ As you can see, you can find three directories:
 - **Figures** --> this directory contains the figures that you see in this *README.md* file. 
 
 
-The dataset directory name is *csv_gplates*, modeshapes are missing due to their size, the link is available here 
+The dataset directory name is *csv_gplates*, modeshapes are missing due to their size, the link is available [HERE](https://drive.google.com/file/d/1pHcqZKaihc7UNpUfCX5Sw652mwhAkiLH/view?usp=drive_link) 
 
 
 ## FRF2Params
