@@ -10,11 +10,18 @@ The following README is only introductive - a complete and comprehensive descrip
 
   <img align="right" src="/Figures/wood_directions.png" width="250"> The methodology contained in this repository is called *FRF2Params*, as it is necessary to measure a Frequency Response Function (FRF) at prescribed points of a wooden plate surface (along with the plate geometry and density) to estimate the mechanical parameters of the plate (Params). 
 
-Our focus is set on musical acoustic and instrument making, so we devised the method to indentify the elastic properties of thin rectangular plates of spruce tonewood used to build the soundboards of guitars. The figure beside shows how those plates are used to build the soundboards. As it can be seen, the soundboard is carved from two thin plates cut from the same spruce sample glued together. 
+The method is devised for the characterization of thin spruce tonewood plates of a given geometry that liuthiers use to build their guitars soundboards. The figure beside shows how those plates are used to build the soundboards. As it can be seen, the soundboard is carved from two book-matched glued together. We are interested in the material properties of such plates because they greatly influence the sound of the whole guitar. 
 
+But what are the mechanical parameters of wood?
 Wood is usually modeled as an ortothropic material. Ortothropic materials are characterized by nine elastic constants (3 Young's moduli, 3 shear moduli and 3 Poisson's ratios). The elastic constants are evaluated with reference to the three characteristic directions highlighted in the figure beside: the direction parallel to the wood fibers direction (*longitudinal*, L), the direction radial with respect to the wood growth rings (*radial*,R) and the direction tangential to the wood growth rings (*tangential*, T). Our aim is to estimate those parameters. 
 
-The flow diagram of *FRF2Params* is reported in the figure below. First it is necessary to define a finite element model of the plate FRF and define where that FRF must be acquired. Once defined, the finite element model is used to generate a dataset containing the eigenfrequencies of the plate and their amplitude in the FRF as the elastic properties, the density, the geometry and the damping of the plate vary. Then, the dataset is used to train two neural networks: one for frequency and one for amplitude. In the meanwhile, the FRF of the plate under test is estimated with the H1 estimator and its peaks are detected via peak analysis. Finally, the neural networks are employed in a optimization procedure to minimize the frequency distance between the peaks of the measured FRF and their predictions. The results are validated by computing a FE simulation of the FRF with the material parameters of the plate set to the values obtained with *FRF2Params*.
+The flow diagram of *FRF2Params* is reported in the figure below.
+- define a finite element model of the plate FRF and define where that FRF must be acquired;
+- the finite element model is used to generate a dataset containing the eigenfrequencies of the plate and their amplitude in the FRF as the elastic properties, the density, the geometry and the damping of the plate vary. 
+- the dataset is used to train two neural networks: one for frequency and one for amplitude. 
+- in the meanwhile, the FRF of the plate under test is estimated with the H1 estimator and its peaks are detected via peak analysis. 
+- the neural networks are employed in a optimization procedure to minimize the frequency distance between the peaks of the measured FRF and their predictions. 
+- The results are validated by computing a FE simulation of the FRF with the material parameters of the plate set to the values obtained with *FRF2Params*.
 
 <img align="center" src="/Figures/method Flowchart.png">
 
